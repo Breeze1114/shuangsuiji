@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/logs/logs",
+    "pages/taskList/taskList",
+    "pages/workList/workList",
+    "pages/workDetail/workDetail"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "双随机",
+    "navigationBarTextStyle": "black"
+  }
+}
