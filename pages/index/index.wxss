@@ -16,6 +16,7 @@ form{
 }
 input{
   border: 1px solid #ccc;
+  border-radius: 4px;
   width: 310px;
   height: 40px;
 }

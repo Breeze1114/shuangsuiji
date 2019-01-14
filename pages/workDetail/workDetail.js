@@ -34,6 +34,7 @@ Page({
     placeholder: '请输入主要检查内容', //提示内容
     checkResult: '', //检查结果
     radioValue: '合格', //单选框默认值
+    files: [],//附件信息
   },
 
   /**
@@ -82,6 +83,12 @@ Page({
               resultList.push(checkResult[i].result);
             }
           }
+          var files = [];//附件信息
+          if (res.data.data.files.length > 0) {
+            files = res.data.data.files;
+          } else {
+            files = [{ name: "请选择附件" }];
+          }
           that.setData({
             date: {
               value: that.data.workResult.check_date,
@@ -93,9 +100,43 @@ Page({
             checked: checked,
             checkResult: res.data.data.check_result,
             placeholder: '', //提示文本清空
+            files: files,
           })
         } else if (status === '暂存') {
-
+          var checkResult = that.data.workResult.matter_check_result;
+          var isPass = res.data.data.is_pass;
+          var checked;
+          if (isPass === '合格') {
+            checked = true;
+          } else if (isPass === '不合格') {
+            checked = false;
+          }
+          if (checkResult != null) {
+            var resultList = [];
+            for (var i = 0; i < checkResult.length; i++) {
+              resultList.push(checkResult[i].result);
+            }
+          }
+          var files = [];//附件信息
+          if (res.data.data.files.length > 0) {
+            files = res.data.data.files;
+          } else {
+            files = [{ name: "请选择附件" }];
+          }
+          that.setData({
+            date: {
+              value: that.data.workResult.check_date,
+              disabled: false
+            },
+            disabled: false,
+            safeList: resultList,
+            approver: res.data.data.audit_user_name,
+            approverId: res.data.data.audit_user_id,
+            checked: checked,
+            checkResult: res.data.data.check_result,
+            placeholder: '', //提示文本清空
+            files: files,
+          })
         }
       },
       fail: function (res) { },
@@ -185,41 +226,41 @@ Page({
 
   saveEntry: function (e) {
     var that = this;
-    wx.setStorage({ //检查结果明细
-      key: 'checkResult',
-      data: that.data.checkResult,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //检查日期
-      key: 'checkDate',
-      data: that.data.date.value,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //是够合格
-      key: 'checkValue',
-      data: that.data.radioValue,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //检查结果列表
-      key: 'matterResult',
-      data: that.data.safeList,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //审批人
-      key: 'approver',
-      data: that.data.approver,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
+    // wx.setStorage({ //检查结果明细
+    //   key: 'checkResult',
+    //   data: that.data.checkResult,
+    //   success: function(res) {},
+    //   fail: function(res) {},
+    //   complete: function(res) {},
+    // })
+    // wx.setStorage({ //检查日期
+    //   key: 'checkDate',
+    //   data: that.data.date.value,
+    //   success: function(res) {},
+    //   fail: function(res) {},
+    //   complete: function(res) {},
+    // })
+    // wx.setStorage({ //是够合格
+    //   key: 'checkValue',
+    //   data: that.data.radioValue,
+    //   success: function(res) {},
+    //   fail: function(res) {},
+    //   complete: function(res) {},
+    // })
+    // wx.setStorage({ //检查结果列表
+    //   key: 'matterResult',
+    //   data: that.data.safeList,
+    //   success: function(res) {},
+    //   fail: function(res) {},
+    //   complete: function(res) {},
+    // })
+    // wx.setStorage({ //审批人
+    //   key: 'approver',
+    //   data: that.data.approver,
+    //   success: function(res) {},
+    //   fail: function(res) {},
+    //   complete: function(res) {},
+    // })
 
     var matterCheckResultList = [];
     var checkResult = {};
@@ -234,7 +275,6 @@ Page({
       }
       matterCheckResultList.push(checkResult);
     }
-    debugger;
     wx.request({
       url: 'http://10.1.40.150:3080/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
       data: {
@@ -243,14 +283,17 @@ Page({
         check_date: that.data.date.value,
         is_pass: that.data.radioValue,
         audit_user_id: that.data.approverId,
+        audit_user_name: that.data.approver,
         matter_check_result: matterCheckResultList,
-
+        files: []
       },
-      header: {},
+      header: {
+        'Authorization': 'Bearer ' + app.globalData.token
+      },
       method: 'post',
       dataType: 'json',
       responseType: 'text',
-      success: function (res) { },
+      success: function (res) { console.log(res) },
       fail: function (res) { },
       complete: function (res) { },
     })
@@ -265,59 +308,33 @@ Page({
   },
 
   uploadFile: function (e) {
-    var files = [];
-
-    var FileSystemManager = wx.getFileSystemManager();
-    debugger;
     wx.chooseImage({
       count: 1,
       sizeType: [],
       sourceType: [],
       success: function (res) {
         console.log(res);
-        files = res.tempFiles;
-        wx.request({
+        var filePaths = res.tempFilePaths;
+        wx.uploadFile({
           url: 'http://10.1.40.150:3080/api/app/upload/result',
-          data: {
-            files: {
-              name: '1.png',
-              path: files[0].path
-            }
-          },
+          filePath: filePaths[0],
+          name: 'files',
           header: {
             "Content-Type": "multipart/form-data",
-            'accept': 'application/json',
             'Authorization': 'Bearer ' + app.globalData.token
           },
-          method: 'POST',
-          dataType: 'json',
-          responseType: 'text',
-          success: function (res) { console.log('上传成功', res) },
+          success: function (res) { console.log(res) },
           fail: function (res) { },
           complete: function (res) { },
         })
-        // wx.uploadFile({
-        //   url: 'http://10.1.40.150:3080/api/app/upload/result',
-        //   filePath: files[0].path,
-        //   name: 'file',
-        //   header: {
-        //     "Content-Type": "multipart/form-data",
-        //     'accept': 'application/json',
-        //     'Authorization': 'Bearer ' + app.globalData.token
-        //   },
-        //   formData: {
 
-        //   },
-        //   success: function(res) {console.log(res)},
-        //   fail: function(res) {},
-        //   complete: function(res) {},
-        // })
       },
       fail: function (res) { },
       complete: function (res) { },
     })
   },
 
+  //导航方法
   gotoLocation: function (e) {
     var that = this;
     //地址转坐标
@@ -347,5 +364,15 @@ Page({
         console.log(res);
       }
     })
+  },
+
+  //文本区域完成输入方法
+  endInput: function (e) {
+    var that = this;
+    if (e.detail) {
+      that.setData({
+        checkResult: e.detail.value
+      })
+    }
   }
 })

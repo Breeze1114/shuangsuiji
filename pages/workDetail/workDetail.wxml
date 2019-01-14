@@ -60,8 +60,8 @@
         <view class='item-enter'>
           <lable class='item-title'>主要检查情况
             <span style='color:red'>*</span>：</lable>
-          <textarea name='checkResult' placeholder='{{placeholder}}' 
-            class='text-area' disabled='{{disabled}}'>{{checkResult}}</textarea>
+          <textarea name='checkResult' placeholder='{{placeholder}}' class='text-area' disabled='{{disabled}}' 
+          bindblur='endInput'>{{checkResult}}</textarea>
         </view>
         <view class='check-group'>
           <view class='check-box item-title'>是否合格：</view>
@@ -77,8 +77,8 @@
             <span style='color:red'>*</span>：</lable>
           <view class='' wx:for='{{workInfo.matter}}' wx:for-item='item'>
             <label>事项名称:{{item.name}}</label>
-            <picker name='matterResult' mode='selector' value='{{listIndex}}' range="{{list}}" 
-              disabled='{{disabled}}' data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
+            <picker name='matterResult' mode='selector' value='{{listIndex}}' range="{{list}}" disabled='{{disabled}}' 
+              data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
               <view class='picker'>
                 <view class='picker-text'>{{safeList[index]}}</view>
               </view>
@@ -88,15 +88,18 @@
         <view class='item-enter'>
           <label class='item-title'>选择提交审计人员
             <span style='color: red'>*</span>:</label>
-          <picker name='approver' mode='selector' value='0' range='{{leaderList}}' range-key='user_name' 
-          disabled='{{disabled}}' bindchange='auditPickerChange'>
+          <picker name='approver' mode='selector' value='0' range='{{leaderList}}' range-key='user_name' disabled='{{disabled}}'                    bindchange='auditPickerChange'>
             <view class='picker'>
               <view class='picker-text'>{{approver}}</view>
             </view>
           </picker>
         </view>
         <view class='item-enter'>
-          <view>检查附件：<view bindtap='uploadFile'>点击上传附件</view></view>
+          <view class='item-title'>检查附件：
+            <view class='picker' wx:for='{{files}}' wx:for-item='item'>
+              <view class='picker-text' disabled='{{disabled}}' name='file' bindtap='uploadFile'>{{item.name}}</view>
+            </view>
+          </view>
         </view>
       </view>
       <view class='button-sp-area' hidden='{{disabled}}'>
