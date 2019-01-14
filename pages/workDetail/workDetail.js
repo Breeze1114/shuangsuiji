@@ -33,7 +33,7 @@ Page({
     checked: true, //是否选中
     placeholder: '请输入主要检查内容', //提示内容
     checkResult: '', //检查结果
-    radioValue: '合格', //单选框默认值
+    radioValue: '', //单选框默认值
     files: [],//附件信息
   },
 
@@ -103,6 +103,7 @@ Page({
             files: files,
           })
         } else if (status === '暂存') {
+          console.log('检查结果', res.data.data);
           var checkResult = that.data.workResult.matter_check_result;
           var isPass = res.data.data.is_pass;
           var checked;
@@ -136,6 +137,7 @@ Page({
             checkResult: res.data.data.check_result,
             placeholder: '', //提示文本清空
             files: files,
+            radioValue: isPass,
           })
         }
       },
@@ -293,7 +295,11 @@ Page({
       method: 'post',
       dataType: 'json',
       responseType: 'text',
-      success: function (res) { console.log(res) },
+      success: function (res) { 
+        wx.navigateBack({
+          delta: 1,
+        })
+      },
       fail: function (res) { },
       complete: function (res) { },
     })
@@ -372,6 +378,16 @@ Page({
     if (e.detail) {
       that.setData({
         checkResult: e.detail.value
+      })
+    }
+  },
+
+  //文本区域获取焦点是触发事件
+  tetxareaFocus: function(e){
+    var that = this;
+    if (e.detail) {
+      that.setData({
+        checkResult: ''
       })
     }
   }
