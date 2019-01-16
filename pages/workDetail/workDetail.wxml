@@ -60,8 +60,8 @@
         <view class='item-enter'>
           <lable class='item-title'>主要检查情况
             <span style='color:red'>*</span>：</lable>
-          <textarea name='checkResult' placeholder='{{placeholder}}' class='text-area' disabled='{{disabled}}' 
-          bindblur='endInput' bindfocus='tetxareaFocus'>{{checkResult}}</textarea>
+          <textarea name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}' class='text-area' disabled='{{disabled}}' 
+           bindinput='tetxareaFocus' value='{{checkResult}}'/>
         </view>
         <view class='check-group'>
           <view class='check-box item-title'>是否合格：</view>

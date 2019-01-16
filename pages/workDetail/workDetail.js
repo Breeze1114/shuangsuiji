@@ -45,14 +45,15 @@ Page({
     var status = options.status;
     var work = JSON.parse(options.work);
     var jumpUrl = '';
+    let port = app.globalData.port;
     that.setData({
       workId: options.workId,
       workInfo: work,
     });
     if (status === '已提交' || status === '已完成') {
-      jumpUrl = 'http://10.1.40.150:3080/api/app/checkUser/work/' + that.data.workId + '/info';
+      jumpUrl = port+'/api/app/checkUser/work/' + that.data.workId + '/info';
     } else {
-      jumpUrl = 'http://10.1.40.150:3080/api/app/checkUser/work/' + that.data.workId + '/info';
+      jumpUrl = port +'/api/app/checkUser/work/' + that.data.workId + '/info';
     }
     wx.request({
       url: jumpUrl,
@@ -69,7 +70,7 @@ Page({
           workResult: res.data.data
         });
         if (status === '已提交' || status === '已完成') {
-          var checkResult = that.data.workResult.matter_check_result;
+          var result = that.data.workResult.matter_check_result;
           var isPass = res.data.data.is_pass;
           var checked;
           if (isPass === '合格') {
@@ -77,10 +78,10 @@ Page({
           } else if (isPass === '不合格') {
             checked = false;
           }
-          if (checkResult != null) {
+          if (result != null) {
             var resultList = [];
-            for (var i = 0; i < checkResult.length; i++) {
-              resultList.push(checkResult[i].result);
+            for (var i = 0; i < result.length; i++) {
+              resultList.push(result[i].result);
             }
           }
           var files = [];//附件信息
@@ -104,7 +105,7 @@ Page({
           })
         } else if (status === '暂存') {
           console.log('检查结果', res.data.data);
-          var checkResult = that.data.workResult.matter_check_result;
+          var result = that.data.workResult.matter_check_result;
           var isPass = res.data.data.is_pass;
           var checked;
           if (isPass === '合格') {
@@ -112,10 +113,10 @@ Page({
           } else if (isPass === '不合格') {
             checked = false;
           }
-          if (checkResult != null) {
+          if (result != null) {
             var resultList = [];
-            for (var i = 0; i < checkResult.length; i++) {
-              resultList.push(checkResult[i].result);
+            for (var i = 0; i < result.length; i++) {
+              resultList.push(result[i].result);
             }
           }
           var files = [];//附件信息
@@ -124,6 +125,8 @@ Page({
           } else {
             files = [{ name: "请选择附件" }];
           }
+          var checkResult = res.data.data.check_result;//检查结果
+          console.log(checkResult);
           that.setData({
             date: {
               value: that.data.workResult.check_date,
@@ -134,7 +137,7 @@ Page({
             approver: res.data.data.audit_user_name,
             approverId: res.data.data.audit_user_id,
             checked: checked,
-            checkResult: res.data.data.check_result,
+            checkResult: checkResult,
             placeholder: '', //提示文本清空
             files: files,
             radioValue: isPass,
@@ -145,7 +148,7 @@ Page({
       complete: function (res) { },
     });
     wx.request({
-      url: 'http://10.1.40.150:3080/api/app/org/getAuditUserList',
+      url: port +'/api/app/org/getAuditUserList',
       data: '',
       header: {
         'Authorization': 'Bearer ' + app.globalData.token
@@ -162,7 +165,7 @@ Page({
       complete: function (res) { },
     });
     wx.request({
-      url: 'http://10.1.40.150:3080/api/app/resultNameList',
+      url: port +'/api/app/resultNameList',
       data: '',
       header: {
         'Authorization': 'Bearer ' + app.globalData.token
@@ -228,57 +231,78 @@ Page({
 
   saveEntry: function (e) {
     var that = this;
-    // wx.setStorage({ //检查结果明细
-    //   key: 'checkResult',
-    //   data: that.data.checkResult,
-    //   success: function(res) {},
-    //   fail: function(res) {},
-    //   complete: function(res) {},
-    // })
-    // wx.setStorage({ //检查日期
-    //   key: 'checkDate',
-    //   data: that.data.date.value,
-    //   success: function(res) {},
-    //   fail: function(res) {},
-    //   complete: function(res) {},
-    // })
-    // wx.setStorage({ //是够合格
-    //   key: 'checkValue',
-    //   data: that.data.radioValue,
-    //   success: function(res) {},
-    //   fail: function(res) {},
-    //   complete: function(res) {},
-    // })
-    // wx.setStorage({ //检查结果列表
-    //   key: 'matterResult',
-    //   data: that.data.safeList,
-    //   success: function(res) {},
-    //   fail: function(res) {},
-    //   complete: function(res) {},
-    // })
-    // wx.setStorage({ //审批人
-    //   key: 'approver',
-    //   data: that.data.approver,
-    //   success: function(res) {},
-    //   fail: function(res) {},
-    //   complete: function(res) {},
-    // })
-
     var matterCheckResultList = [];
-    var checkResult = {};
+    var checkResultObj = {};
     var list = that.data.workInfo.matter;
     for (var i = 0; i < list.length; i++) {
-      checkResult = {
+      checkResultObj = {
         code: list[i].code,
         name: list[i].name,
         result: that.data.safeList[i],
         law: '',
         remark: ''
       }
-      matterCheckResultList.push(checkResult);
+      matterCheckResultList.push(checkResultObj);
+    }
+    wx.setStorage({ //检查结果明细
+      key: 'checkResult',
+      data: that.data.checkResult,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    })
+    wx.setStorage({ //检查日期
+      key: 'checkDate',
+      data: that.data.date.value,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    })
+    wx.setStorage({ //是够合格
+      key: 'checkValue',
+      data: that.data.radioValue,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    })
+    wx.setStorage({ //检查结果列表
+      key: 'matterResult',
+      data: that.data.safeList,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    })
+    wx.setStorage({ //审批人
+      key: 'approver',
+      data: that.data.approver,
+      success: function (res) { },
+      fail: function (res) { },
+      complete: function (res) { },
+    })
+  },
+
+  reset: function (e) {
+
+  },
+
+  submit: function (e) {
+    var that = this;
+    var matterCheckResultList = [];
+    var checkResultObj = {};
+    var list = that.data.workInfo.matter;
+    let port = app.globalData.port;
+    for (var i = 0; i < list.length; i++) {
+      checkResultObj = {
+        code: list[i].code,
+        name: list[i].name,
+        result: that.data.safeList[i],
+        law: '',
+        remark: ''
+      }
+      matterCheckResultList.push(checkResultObj);
     }
     wx.request({
-      url: 'http://10.1.40.150:3080/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
+      url: port +'/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
       data: {
         check_result: that.data.checkResult,
         operate: '暂存',
@@ -295,7 +319,7 @@ Page({
       method: 'post',
       dataType: 'json',
       responseType: 'text',
-      success: function (res) { 
+      success: function (res) {
         wx.navigateBack({
           delta: 1,
         })
@@ -305,39 +329,31 @@ Page({
     })
   },
 
-  reset: function (e) {
-
-  },
-
-  submit: function (e) {
-    console.log(e);
-  },
-
   uploadFile: function (e) {
+    let port = app.globalData.port;
     wx.chooseImage({
       count: 1,
-      sizeType: [],
-      sourceType: [],
+      sizeType: ['original', 'compressed'],
+      sourceType: ['album', 'camera'],
       success: function (res) {
         console.log(res);
         var filePaths = res.tempFilePaths;
         wx.uploadFile({
-          url: 'http://10.1.40.150:3080/api/app/upload/result',
+          url: port +'/api/app/upload/result',
           filePath: filePaths[0],
           name: 'files',
           header: {
-            "Content-Type": "multipart/form-data",
             'Authorization': 'Bearer ' + app.globalData.token
           },
           success: function (res) { console.log(res) },
           fail: function (res) { },
           complete: function (res) { },
         })
-
       },
       fail: function (res) { },
       complete: function (res) { },
     })
+    
   },
 
   //导航方法
@@ -387,7 +403,7 @@ Page({
     var that = this;
     if (e.detail) {
       that.setData({
-        checkResult: ''
+        checkResult: e.detail.value
       })
     }
   }

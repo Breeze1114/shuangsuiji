@@ -16,8 +16,9 @@ Page({
    */
   onLoad: function (options) {
     var that = this//搭桥，直接用this访问不了
+    let port = app.globalData.port;
     wx.request({
-      url: 'http://10.1.40.150:3080/api/app/checkUser/taskList',
+      url: port+'/api/app/checkUser/taskList',
       data: {
         page: 1,
         rows: 10

@@ -129,6 +129,7 @@ Page({
         complete: function (res) { },
       })
     } else {
+      let port = app.globalData.port;
       wx.showToast({
         title: '登录成功',
         icon: 'success',
@@ -140,7 +141,7 @@ Page({
         complete: function (res) { },
       })
       wx.request({
-        url: 'http://10.1.40.150:3080/api/auth',
+        url: port+'/api/auth',
         data: {
           username: e.detail.value.userName,
           password: base64.CusBASE64.encoder(e.detail.value.password)

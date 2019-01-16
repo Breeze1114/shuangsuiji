@@ -18,8 +18,9 @@ Page({
    */
   onLoad: function (options) {
     var that = this;
+    let port = app.globalData.port;
     wx.request({
-      url: 'http://10.1.40.150:3080/api/app/checkUser/task/' + app.globalData.task_id + '/workList',
+      url: port+'/api/app/checkUser/task/' + app.globalData.task_id + '/workList',
       data: {
         page: "1",
         rows: "10",
