@@ -234,78 +234,68 @@ Page({
   //本地输入数据缓存
   saveEntry: function (e) {
     var that = this;
-    var matterCheckResultList = [];
-    var checkResultObj = {};
-    var list = that.data.workInfo.matter;
-    var workId = app.globalData.work_id;//工作id，根绝每个工作的id区分缓存
-    for (var i = 0; i < list.length; i++) {
-      checkResultObj = {
-        code: list[i].code,
-        name: list[i].name,
-        result: that.data.safeList[i],
-        law: '',
-        remark: ''
-      }
-      matterCheckResultList.push(checkResultObj);
+    var canSave = that.validateForm(that.data);
+    if(canSave){
+      var workId = app.globalData.work_id;//工作id，根绝每个工作的id区分缓存
+      wx.setStorage({ //检查结果明细
+        key: 'checkResult' + workId,
+        data: that.data.checkResult,
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.setStorage({ //检查日期
+        key: 'checkDate' + workId,
+        data: that.data.date.value,
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.setStorage({ //是够合格
+        key: 'checkValue' + workId,
+        data: that.data.radioValue,
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.setStorage({ //检查结果列表
+        key: 'matterResult' + workId,
+        data: that.data.safeList,
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.setStorage({ //审批人
+        key: 'approver' + workId,
+        data: {
+          approverId: that.data.approverId,
+          approver: that.data.approver
+        },
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.setStorage({//附件文件
+        key: 'files' + workId,
+        data: that.data.files,
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.showToast({
+        title: '暂存成功',
+        icon: 'success',
+        image: '',
+        duration: 20000,
+        mask: true,
+        success: function (res) { },
+        fail: function (res) { },
+        complete: function (res) { },
+      })
+      wx.navigateBack({
+        delta: 1,
+      })
     }
-    wx.setStorage({ //检查结果明细
-      key: 'checkResult' + workId,
-      data: that.data.checkResult,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //检查日期
-      key: 'checkDate' + workId,
-      data: that.data.date.value,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //是够合格
-      key: 'checkValue' + workId,
-      data: that.data.radioValue,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //检查结果列表
-      key: 'matterResult' + workId,
-      data: that.data.safeList,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({ //审批人
-      key: 'approver' + workId,
-      data: {
-        approverId: that.data.approverId,
-        approver: that.data.approver
-      },
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
-    })
-    wx.setStorage({//附件文件
-      key: 'files' + workId,
-      data: that.data.files,
-      success: function(res) {},
-      fail: function(res) {},
-      complete: function(res) {},
-    })
-    wx.showToast({
-      title: '暂存成功',
-      icon: 'success',
-      image: '',
-      duration: 20000,
-      mask: true,
-      success: function(res) {},
-      fail: function(res) {},
-      complete: function(res) {},
-    })
-    wx.navigateBack({
-      delta: 1,
-    })
   },
 
   //重置
@@ -589,10 +579,47 @@ Page({
     })
   },
 
-  //是否没编辑过
-  isEdit: function(){
-    var that = this;
-    var workId = app.globalData.work_id;//工作id
-    var count;
+  //验证表单方法
+  validateForm: function(data){
+    if(!data.checkResult){
+      wx.showToast({
+        title: '主要检查情况不能为空!',
+        icon: 'none',
+        duration: 2000,
+        mask: true,
+      })
+      return false;
+    }
+    //默认的意见列表全是一样的“请输入检查意见”，通过判断有多少个一样的默认值来判断是否都选了
+    if (data.safeList) {
+      var defaultNum = 0;//默认的结果个数
+      var changeNum = 0;//改变了的结果个数
+      for(var i = 0;i<data.safeList.length;i++){
+        if (data.safeList[i] === '请输入检查结果'){
+          defaultNum += 1;
+        }else{
+          changeNum += 1;
+        }
+      }
+      if(changeNum < data.workInfo.matter.length){
+        wx.showToast({
+          title: '请选择承办人意见',
+          icon: 'none',
+          duration: 2000,
+          mask: true,
+        })
+        return false;
+      }
+    }
+    if (data.approver === '请选择审核人员') {
+      wx.showToast({
+        title: '请选择一个审批人!',
+        icon: 'none',
+        duration: 2000,
+        mask: true,
+      })
+      return false;
+    }
+    return true;
   }
 })
