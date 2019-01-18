@@ -153,31 +153,44 @@ Page({
         dataType: 'json',
         responseType: 'text',
         success: function (res) {
-          app.globalData.token = res.data.token;
-          wx.setStorage({//缓存token
-            key: 'token',
-            data: res.data.token,
-            success: function (res) { },
-            fail: function (res) { },
-            complete: function (res) { },
-          })
-          var timestampCache = Date.parse(new Date());
-          wx.setStorage({//存一个过期时间
-            key: 'outTime',
-            data: {
-              timestampCache: timestampCache,
-              outTime: 1200000
-            },
-            success: function (res) { },
-            fail: function (res) { },
-            complete: function (res) { },
-          })
-          wx.navigateTo({
-            url: '../taskList/taskList',
-            success: function (res) { },
-            fail: function (res) { },
-            complete: function (res) { },
-          })
+          if(res.data.code === 0){
+            app.globalData.token = res.data.token;
+            wx.setStorage({//缓存token
+              key: 'token',
+              data: res.data.token,
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            })
+            var timestampCache = Date.parse(new Date());
+            wx.setStorage({//存一个过期时间
+              key: 'outTime',
+              data: {
+                timestampCache: timestampCache,
+                outTime: 1200000
+              },
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            })
+            wx.navigateTo({
+              url: '../taskList/taskList',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            })
+          }else{
+            wx.showToast({
+              title: '用户名或密码错误',
+              icon: 'none',
+              image: '',
+              duration: 2000,
+              mask: true,
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            })
+          }
         },
         fail: function (res) { console.log(res) },
         complete: function (res) { },

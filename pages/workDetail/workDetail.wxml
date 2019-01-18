@@ -61,7 +61,7 @@
           <lable class='item-title'>主要检查情况
             <span style='color:red'>*</span>：</lable>
           <textarea name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}' class='text-area' disabled='{{disabled}}' 
-           bindinput='tetxareaFocus' value='{{checkResult}}'/>
+           bindinput='tetxareaInput' value='{{checkResult}}'/>
         </view>
         <view class='check-group'>
           <view class='check-box item-title'>是否合格：</view>
@@ -77,7 +77,7 @@
             <span style='color:red'>*</span>：</lable>
           <view class='' wx:for='{{workInfo.matter}}' wx:for-item='item'>
             <label>事项名称:{{item.name}}</label>
-            <picker name='matterResult' mode='selector' value='{{listIndex}}' range="{{list}}" disabled='{{disabled}}' 
+            <picker name='matterResult' mode='selector' value='{{safeList[index]}}' range="{{list}}" disabled='{{disabled}}' 
               data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
               <view class='picker'>
                 <view class='picker-text'>{{safeList[index]}}</view>
@@ -88,7 +88,7 @@
         <view class='item-enter'>
           <label class='item-title'>选择提交审计人员
             <span style='color: red'>*</span>:</label>
-          <picker name='approver' mode='selector' value='0' range='{{leaderList}}' range-key='user_name' disabled='{{disabled}}'                    bindchange='auditPickerChange'>
+          <picker name='approver' mode='selector' value='{{leaderList[listIndex]}}' range='{{leaderList}}' range-key='user_name'                    disabled='{{disabled}}' bindchange='auditPickerChange'>
             <view class='picker'>
               <view class='picker-text'>{{approver}}</view>
             </view>
