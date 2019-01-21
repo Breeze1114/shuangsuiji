@@ -1,4 +1,5 @@
 /* miniprogram/pages/workDetail/workDetail.wxss */
+@import "../../style/weui.wxss";
 
 .button-sp-area {
   margin: 0 auto;
@@ -94,4 +95,23 @@
 .address {
   color: green;
   text-decoration: underline;
+}
+
+.weui-uploader__img {
+  display:block;
+  width:95px;
+  height:95px;
+}
+
+.weui-cells{
+  margin-top: 0.17647059000000015em
+}
+
+.weui-cell{
+  background-color:rgb(247, 247, 247);
+}
+
+.weui-uploader__input-box{
+  width:95px;
+  height:95px;
 }
