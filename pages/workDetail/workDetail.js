@@ -34,9 +34,10 @@ Page({
     placeholder: '请输入主要检查内容', //提示内容
     checkResult: '', //检查结果
     radioValue: '', //单选框默认值
-    files: [{ name: "请选择附件" }],//附件信息
-    imgs: [],
-    display:''//控制上传图片的添加按钮是否可用
+    files: [],//最后上传到服务器的附件信息
+    imgs: [],//在前端展示的图片路径信息
+    display:'',//控制上传图片的添加按钮是否可用
+    tempImgPath:[] //上传的图片的临时路径
   },
 
   /**
@@ -67,7 +68,7 @@ Page({
           workResult: res.data.data
         });
         if (status === '已提交' || status === '已完成') {
-          console.log('检查结果', res.data.data);
+          //console.log('检查结果', res.data.data);
           var result = that.data.workResult.matter_check_result;
           var isPass = res.data.data.is_pass;
           var checked;
@@ -89,7 +90,7 @@ Page({
               files.push(port + res.data.data.files[i].url);
             }
           } else {
-            files = [{ name: "请选择附件" }];
+            files = [];
           }
           that.setData({
             date: {
@@ -106,7 +107,7 @@ Page({
             display: 'none'//不可再上传图片
           })
         } else if (status === '暂存') {
-          console.log('检查结果', res.data.data);
+          //console.log('检查结果', res.data.data);
           var result = that.data.workResult.matter_check_result;
           var isPass = res.data.data.is_pass;
           var checked;
@@ -127,7 +128,7 @@ Page({
               files.push(port + res.data.data.files[i].url);
             }
           } else {
-            files = [{ name: "请选择附件" }];
+            files = [];
           }
           var checkResult = res.data.data.check_result;//检查结果
           that.setData({
@@ -143,6 +144,7 @@ Page({
             checkResult: checkResult,
             placeholder: '', //提示文本清空
             imgs: files,
+            files: res.data.data.files,
             radioValue: isPass,
           })
           //that.getStorage();
@@ -322,7 +324,7 @@ Page({
   submit: function (e) {
     var that = this;
     //先把图片上传,上传完文件后，再调用上传其他信息方法
-    that.uploadFile(that.data.imgs);
+    that.uploadFile(that.data.tempImgPath);
   },
 
   //上传结果
@@ -342,6 +344,8 @@ Page({
       }
       matterCheckResultList.push(checkResultObj);
     }
+    console.log('files:',that.data.files);
+    console.log('imgs:',that.data.imgs);
     wx.request({
       url: port + '/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
       data: {
@@ -381,71 +385,75 @@ Page({
       duration: 10000
     })
     var filePaths = e;
-    var files = that.data.files;
-    var successNum = e.successNum ? e.successNum : 0;//上传成功次数
-    var failNum = e.failNum ? e.failNum : 0;//上传失败次数
-    var uploadTime = e.uploadTime ? e.uploadTime : 0;//上传次数
-    wx.uploadFile({
-      url: port + '/api/app/upload/result',
-      filePath: filePaths[uploadTime],
-      name: 'files',
-      header: {
-        'Authorization': 'Bearer ' + app.globalData.token
-      },
-      success: function (res) {
-        var data = JSON.parse(res.data);
-        if (data.code === 0) {//上传请求成功状态码
-          //新增一个文件对象
-          var file = {
-            name: data.data.name,
-            status: data.data.status,
-            thumbUrl: data.data.thumbUrl,
-            uid: data.data.uid,
-            url: data.data.url,
-            type: data.data.type
+    console.log(filePaths);
+    if(filePaths.length > 0){
+      var files = that.data.files;
+      var successNum = e.successNum ? e.successNum : 0;//上传成功次数
+      var failNum = e.failNum ? e.failNum : 0;//上传失败次数
+      var uploadTime = e.uploadTime ? e.uploadTime : 0;//上传次数
+      wx.uploadFile({
+        url: port + '/api/app/upload/result',
+        filePath: filePaths[uploadTime],
+        name: 'files',
+        header: {
+          'Authorization': 'Bearer ' + app.globalData.token
+        },
+        success: function (res) {
+          var data = JSON.parse(res.data);
+          if (data.code === 0) {//上传请求成功状态码
+            //新增一个文件对象
+            var file = {
+              name: data.data.name,
+              status: data.data.status,
+              thumbUrl: data.data.thumbUrl,
+              uid: data.data.uid,
+              url: data.data.url,
+              type: data.data.type
+            }
+            //统计上传文件的个数
+            successNum += 1;
+            //把文件对象放在文件列表里
+            files.push(file);
+            console.log('上传成功次数:' + successNum + ',这是第' + (uploadTime + 1) + '次上传');
+            that.setData({
+              files: files
+            })
+          } else {
+            wx.showModal({
+              title: '错误提示',
+              content: '上传图片失败',
+              showCancel: false,
+              success: function (res) { }
+            })
           }
-          //统计上传文件的个数
-          successNum += 1;
-          //把文件对象放在文件列表里
-          files.push(file);
-          console.log('附件信息转' + JSON.stringify(file));
-          console.log('上传成功次数' + successNum + '这是第' + uploadTime + 1 + '次上传');
-          that.setData({
-            files: files
-          })
-        } else {
+        },
+        fail: function (res) {
+          failNum += 1;
+          console.log('上传失败次数:' + failNum + ',这是第' + (uploadTime + 1) + '次上传');
           wx.showModal({
             title: '错误提示',
             content: '上传图片失败',
             showCancel: false,
             success: function (res) { }
           })
-        }
-      },
-      fail: function (res) {
-        failNum += 1;
-        console.log('上传成功次数' + failNum + '这是第' + uploadTime + 1 + '次上传');
-        wx.showModal({
-          title: '错误提示',
-          content: '上传图片失败',
-          showCancel: false,
-          success: function (res) { }
-        })
-      },
-      complete: function (res) {
-        uploadTime++;
-        if (uploadTime == e.length) {
-          wx.hideToast();
-          console.log('上传完毕，其中成功' + successNum + '次，失败' + failNum + '次');
-          that.submitResult();
-        } else {
-          e.successNum = successNum;
-          e.failNUm = failNum;
-          e.uploadTime = uploadTime;
-          that.uploadFile(e);
-        }
-      },
-    })
+        },
+        complete: function (res) {
+          uploadTime++;
+          if (uploadTime == e.length) {
+            wx.hideToast();
+            console.log('上传完毕，其中成功' + successNum + '次，失败' + failNum + '次');
+            that.submitResult();
+          } else {
+            e.successNum = successNum;
+            e.failNUm = failNum;
+            e.uploadTime = uploadTime;
+            that.uploadFile(e);
+          }
+        },
+      })
+    }else{
+      that.submitResult();
+    }
   },
 
   //图片上传
@@ -459,11 +467,12 @@ Page({
           title: '正在上传...',
           icon: 'loading',
           mask: true,
-          duration: 10000
+          duration: 1000
         })
         // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
         that.setData({
-          imgs: that.data.imgs.concat(res.tempFilePaths)
+          imgs: that.data.imgs.concat(res.tempFilePaths),
+          tempImgPath: that.data.tempImgPath.concat(res.tempFilePaths)//把临时路径存起来
         });
       }
     })
@@ -474,6 +483,38 @@ Page({
     wx.previewImage({
       current: e.currentTarget.id, // 当前显示图片的http链接
       urls: this.data.imgs // 需要预览的图片http链接列表
+    })
+  },
+
+  //删除图片
+  delImg: function(e){
+    var that = this;
+    var imgs = that.data.imgs;
+    var files = that.data.files;//需要上传的附件信息
+    var index = e.currentTarget.dataset.index;
+    wx.showModal({
+      title: '提示',
+      content: '是否删除照片',
+      showCancel: true,
+      cancelText: '否',
+      cancelColor: '',
+      confirmText: '是',
+      confirmColor: '',
+      success: function(res) {
+        if(res.confirm){
+          imgs.splice(index, 1);
+          files.splice(index, 1);
+          console.log("确认删除了");
+        }else if(res.cancel){
+          console.log("取消删除");
+          return false;
+        }
+        that.setData({
+          imgs: imgs
+        })
+      },
+      fail: function(res) {},
+      complete: function(res) {},
     })
   },
 

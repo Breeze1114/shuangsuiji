@@ -28,9 +28,7 @@ Page({
       dataType: 'json',
       responseType: 'text',
       success: function (res) {
-        console.log(res.data.data)
         that.data.taskList = res.data.data
-        console.log(that.data.taskList)
         that.setData({
           taskList: res.data.data
         })

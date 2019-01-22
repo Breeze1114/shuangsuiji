@@ -31,7 +31,6 @@ Page({
       dataType: 'json',
       responseType: 'text',
       success: function (res) {
-        console.log(res.data.data);
         that.data.workList = res.data.data;
         that.setData({
           workList: res.data.data

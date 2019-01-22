@@ -21,7 +21,7 @@ Page({
         var timestamp = Date.parse(new Date());
         var timestampCache = res.data.timestampCache;
         if ((timestamp - timestampCache) > res.data.outTime) {
-          console.log("过期了");
+          console.log("登录信息过期");
           wx.showToast({
             title: '登录信息已过期！请重新登录',
             icon: 'none',
