@@ -36,7 +36,15 @@ Page({
           workList: res.data.data
         })
       },
-      fail: function (res) { console.log(res) },
+      fail: function (res) { 
+        wx.showModal({
+          title: '系统提示',
+          content: '获取作业列表失败',
+          showCancel: true,
+          confirmText: '知道了',
+        })
+        console.log(res);
+      },
       complete: function (res) { },
     })
   },
@@ -98,9 +106,6 @@ Page({
     app.globalData.work_id = workId;
     wx.navigateTo({
       url: '../workDetail/workDetail?status=' + status + '&workId=' + workId + '&work=' + work,
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
     })
   }
 })

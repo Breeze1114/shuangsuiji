@@ -33,7 +33,14 @@ Page({
           taskList: res.data.data
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取任务列表失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
   },
@@ -93,9 +100,6 @@ Page({
     app.globalData.task_id = taskId;
     wx.navigateTo({
       url: '../workList/workList',
-      success: function (res) { },
-      fail: function (res) { },
-      complete: function (res) { },
     })
   }
 })

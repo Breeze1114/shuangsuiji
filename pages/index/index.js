@@ -123,23 +123,10 @@ Page({
         icon: 'none',
         image: '',
         duration: 2000,
-        mask: true,
-        success: function (res) { },
-        fail: function (res) { },
-        complete: function (res) { },
+        mask: true
       })
     } else {
       let port = app.globalData.port;
-      wx.showToast({
-        title: '登录成功',
-        icon: 'success',
-        image: '',
-        duration: 2000,
-        mask: true,
-        success: function (res) { },
-        fail: function (res) { },
-        complete: function (res) { },
-      })
       wx.request({
         url: port+'/api/auth',
         data: {
@@ -154,12 +141,26 @@ Page({
         responseType: 'text',
         success: function (res) {
           if(res.data.code === 0){
+            wx.showToast({
+              title: '登录成功',
+              icon: 'success',
+              image: '',
+              duration: 2000,
+              mask: true
+            })
             app.globalData.token = res.data.token;
             wx.setStorage({//缓存token
               key: 'token',
               data: res.data.token,
-              success: function (res) { },
-              fail: function (res) { },
+              success: function (res) {console.log('缓存token成功')},
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '缓存本地登录信息失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
               complete: function (res) { },
             })
             var timestampCache = Date.parse(new Date());
@@ -168,16 +169,10 @@ Page({
               data: {
                 timestampCache: timestampCache,
                 outTime: 1200000
-              },
-              success: function (res) { },
-              fail: function (res) { },
-              complete: function (res) { },
+              }
             })
             wx.navigateTo({
-              url: '../taskList/taskList',
-              success: function (res) { },
-              fail: function (res) { },
-              complete: function (res) { },
+              url: '../taskList/taskList'
             })
           }else{
             wx.showToast({
@@ -185,10 +180,7 @@ Page({
               icon: 'none',
               image: '',
               duration: 2000,
-              mask: true,
-              success: function (res) { },
-              fail: function (res) { },
-              complete: function (res) { },
+              mask: true
             })
           }
         },

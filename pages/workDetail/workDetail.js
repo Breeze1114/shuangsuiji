@@ -152,7 +152,21 @@ Page({
           that.getStorage();
         }
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '系统出错，请尽快联系系统管理员',
+          showCancel: false,
+          confirmText: '好',
+          success: function(res) {
+            if(res.confirm){
+              wx.navigateBack({
+                delta: 1,
+              })
+            }
+          }
+        })
+      },
       complete: function (res) { },
     });
     wx.request({
@@ -169,7 +183,21 @@ Page({
           leaderList: res.data.data
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取审批人员列表失败',
+          showCancel: false,
+          confirmText: '返回上一层',
+          success: function(res) {
+            if(res.confirm){
+              wx.navigateBack({
+                delta: 1,
+              })
+            }
+          }
+        })
+      },
       complete: function (res) { },
     });
     wx.request({
@@ -195,7 +223,15 @@ Page({
           safeList: arr
         });
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '检查事项结果加载失败',
+          showCancel: false,
+          confirmText: '知道了',
+          success: function(res) {}
+        })
+      },
       complete: function (res) { },
     });
   },
@@ -244,6 +280,7 @@ Page({
   //本地输入数据缓存
   saveEntry: function (e) {
     var that = this;
+    //验证是不是必填都填了
     var canSave = that.validateForm(that.data);
     if (canSave) {
       var workId = app.globalData.work_id;//工作id，根绝每个工作的id区分缓存
@@ -251,28 +288,56 @@ Page({
         key: 'checkResult' + workId,
         data: that.data.checkResult,
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '主要检查情况本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.setStorage({ //检查日期
         key: 'checkDate' + workId,
         data: that.data.date.value,
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '检查日期本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.setStorage({ //是够合格
         key: 'checkValue' + workId,
         data: that.data.radioValue,
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '检查是否合格本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.setStorage({ //检查结果列表
         key: 'matterResult' + workId,
         data: that.data.safeList,
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '承办人意见本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.setStorage({ //审批人
@@ -282,32 +347,49 @@ Page({
           approver: that.data.approver
         },
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '审批人员本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.setStorage({//附件文件
         key: 'files' + workId,
         data: that.data.files,
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '附件本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.setStorage({//图片
         key: 'imgs' + workId,
         data: that.data.imgs,
         success: function (res) { },
-        fail: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '图片路径本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
         complete: function (res) { },
       })
       wx.showToast({
         title: '暂存成功',
         icon: 'success',
-        image: '',
         duration: 20000,
-        mask: true,
-        success: function (res) { },
-        fail: function (res) { },
-        complete: function (res) { },
+        mask: true
       })
       wx.navigateBack({
         delta: 1,
@@ -369,8 +451,15 @@ Page({
           delta: 1,
         })
       },
-      fail: function (res) { },
-      complete: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '检查结果提交失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
+      complete: function (res) {},
     })
   },
 
@@ -512,9 +601,7 @@ Page({
         that.setData({
           imgs: imgs
         })
-      },
-      fail: function(res) {},
-      complete: function(res) {},
+      }
     })
   },
 
@@ -587,7 +674,14 @@ Page({
           }
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取检查日期缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     //主要检查情况
@@ -603,7 +697,14 @@ Page({
           checkResult: checkResult
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取主要检查情况缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     //是否合格
@@ -626,7 +727,14 @@ Page({
           checked: checked
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取检查结果是否合格缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     //承办人意见
@@ -640,7 +748,14 @@ Page({
           safeList: matterResultList,
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取承办人意见缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     //审批人
@@ -655,7 +770,14 @@ Page({
           approverId: approver.approverId
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取审批人缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     //附件信息
@@ -669,7 +791,14 @@ Page({
           files: files
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取附件信息缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     //图片附件信息
@@ -683,7 +812,14 @@ Page({
           imgs: imgs
         })
       },
-      fail: function (res) { },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '获取图片路径缓存失败',
+          showCancel: false,
+          confirmText: '知道了'
+        })
+      },
       complete: function (res) { },
     })
     that.setData({
