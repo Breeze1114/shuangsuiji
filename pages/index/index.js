@@ -54,6 +54,7 @@ Page({
       success: function (res) {
         if (res.data) {
           app.globalData.token = res.data;
+          app.globalData.authorization = 'Bearer ' + res.data;
           wx.navigateTo({
             url: '../taskList/taskList',
             success: function (res) { },
@@ -149,6 +150,7 @@ Page({
               mask: true
             })
             app.globalData.token = res.data.token;
+            app.globalData.authorization = 'Bearer ' + res.data.token;
             wx.setStorage({//缓存token
               key: 'token',
               data: res.data.token,

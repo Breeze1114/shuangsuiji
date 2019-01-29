@@ -1,0 +1,140 @@
+<!--pages/workResultInput/workResultInput.wxml-->
+<view class='page'>
+  <view class='container page-header'>
+    <text class='page-title'>检查结果录入</text>
+  </view>
+  <view class='page__bd'>
+    <form bindreset='reset' bindsubmit='submit'>
+        <!-- <view class="weui-cells__title">主要检查情况<span style='color:red'>*</span></view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell">
+                <view class="weui-cell__bd">
+                    <textarea name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}' class='weui-textarea' 
+                      style="height: 5.5em" disabled='{{disabled}}' bindinput='tetxareaInput' value='{{checkResult}}' />
+                </view>
+            </view>
+        </view>
+        <view class="weui-cell">
+            <view class="weui-cell__hd">
+                <view class="weui-label">检查日期</view>
+            </view>
+            <view class="weui-cell__bd">
+                <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
+                  <view name='date' class='weui-input'>{{date.value}}</view>
+                </picker>
+            </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+            <view class="weui-cell__hd">
+                <view class="weui-label">是否合格</view>
+            </view>
+            <view class="weui-cell__bd">
+                <radio-group bindchange='checkChange' name='radioBox'>
+                  <radio disabled='{{disabled}}' value='合格' checked='{{checked}}'>合格</radio>
+                  <radio disabled='{{disabled}}' value='不合格' checked='{{!checked}}'>不合格</radio>
+                </radio-group>
+            </view>
+        </view> -->
+          <view class=''>
+            <view class='item-enter'>
+              <view class='item-title item-detail'>检查日期：</view>
+              <view class='item-detail'>
+                <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
+                  <view name='date' class='date-picker'>{{date.value}}</view>
+                </picker>
+              </view>
+            </view>
+            <view class='item-enter'>
+              <lable class='item-title'>主要检查情况
+                <span style='color:red'>*</span>：</lable>
+              <textarea name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}' class='text-area' disabled='{{disabled}}'                    bindinput='tetxareaInput' value='{{checkResult}}' />
+            </view>
+            <view class='check-group'>
+              <view class='check-box item-title'>是否合格：</view>
+              <view class='check-box'>
+                <radio-group bindchange='checkChange' name='radioBox'>
+                  <radio disabled='{{disabled}}' value='合格' checked='{{checked}}'>合格</radio>
+                  <radio disabled='{{disabled}}' value='不合格' checked='{{!checked}}'>不合格</radio>
+                </radio-group>
+              </view>
+            </view>
+            <view class='item-enter'>
+              <lable class='item-title'>承办人意见
+                <span style='color:red'>*</span>：</lable>
+              <view class='' wx:for='{{workInfo.matter}}' wx:key="*this" wx:for-item='item'>
+                <label>事项名称:{{item.name}}</label>
+                <picker name='matterResult' mode='selector' value='{{safeList[index]}}' range="{{list}}" disabled='{{disabled}}'                           data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
+                  <view class='picker'>
+                    <view class='picker-text'>{{safeList[index]}}</view>
+                  </view>
+                </picker>
+              </view>
+            </view>
+            <view class='item-enter'>
+              <label class='item-title'>选择提交审计人员
+                <span style='color: red'>*</span>:</label>
+              <picker name='approver' mode='selector' value='{{leaderList[listIndex]}}' range='{{leaderList}}' range-key='user_name'                     disabled='{{disabled}}' bindchange='auditPickerChange'>
+                <view class='picker'>
+                  <view class='picker-text'>{{approver}}</view>
+                </view>
+              </picker>
+            </view>
+            <view class='item-enter'>
+              <view class='item-title'>检查附件：
+                <view class="weui-cells">
+                  <view class="weui-cell">
+                    <view class="weui-cell__bd">
+                      <view class='weui-uploader'>
+                        <view class="weui-uploader__bd">
+                          <view class="weui-uploader__files" id="uploaderFiles">
+                            <block wx:for="{{imgs}}" wx:key="*this">
+                              <view class="weui-uploader__file" data-index='{{index}}' bindtap="previewImage" 
+                                bindlongpress='delImg' id="{{item}}">
+                                <image class="weui-uploader__img" src="{{item}}" mode="aspectFill" />
+                              </view>
+                            </block>
+                          </view>
+                          <view class="weui-uploader__input-box">
+                            <view class="weui-uploader__input" bindtap="chooseImage" style="display: {{display}};"></view>
+                          </view>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view class='item-enter' hidden='{{!isUnionHeadOrg}}'>
+              <view class='item-title'>联合总表<span style='color:red'>*</span>：
+                <view class="weui-cells">
+                  <view class="weui-cell">
+                    <view class="weui-cell__bd">
+                      <view class='weui-uploader'>
+                        <view class="weui-uploader__bd">
+                          <view class="weui-uploader__files" id="uploaderFiles">
+                            <block wx:for="{{unionImgs}}" wx:key="*this">
+                              <view class="weui-uploader__file" data-index='{{index}}' bindtap="previewUnionImage" 
+                                bindlongpress='delUnionImg' id="{{item}}">
+                                <image class="weui-uploader__img" src="{{item}}" mode="aspectFill" />
+                              </view>
+                            </block>
+                          </view>
+                          <view class="weui-uploader__input-box">
+                            <view class="weui-uploader__input" bindtap="chooseUnionFile" style="display: {{display}};"></view>
+                          </view>
+                        </view>
+                      </view>
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+          <view class='button-sp-area' hidden='{{disabled}}'>
+            <button class='weui-btn mini-btn' type='warn' size='mini' form-type='reset'>重置</button>
+            <button class='weui-btn mini-btn' type='default' size='mini' bindtap='saveEntry'>暂存</button>
+            <button class='weui-btn mini-btn' type='primary' size='mini' bindtap='' form-type='submit'>提交</button>
+          </view>
+        </form>
+  </view>
+</view>

@@ -6,5 +6,13 @@
     "navigationBarTitleText": "双随机登录",
     "navigationBarTextStyle": "black",
     "onReachBottomDistance": "100px"
+  },
+
+  "usingComponents": {
+    "wux-cell-group": "../../dist/cell-group/index",
+    "wux-cell": "../../dist/cell/index",
+    "wux-input": "../../dist/input/index",
+    "wux-icon": "../../dist/icon/index",
+    "wux-button": "../../dist/button/index"
   }
 }

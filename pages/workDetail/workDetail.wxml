@@ -1,5 +1,5 @@
 <!--miniprogram/pages/workDetail/workDetail.wxml-->
-<view class='page'>
+<!-- <view class='page'>
   <view class='page-body'>
     <view class='item work-info'>
       <text class='title-text'>当事人基本资料</text>
@@ -94,9 +94,9 @@
         </view>
         <view class='item-enter'>
           <view class='item-title'>检查附件：
-            <!-- <view class='picker' wx:for='{{files}}' wx:for-item='item'>
+            <view class='picker' wx:for='{{files}}' wx:for-item='item'>
               <view class='picker-text' disabled='{{disabled}}' name='file' bindtap='uploadFile'>{{item.name}}</view>
-            </view> -->
+            </view>
             <view class="weui-cells">
               <view class="weui-cell">
                 <view class="weui-cell__bd">
@@ -127,5 +127,81 @@
         <button class='weui-btn mini-btn' type='primary' size='mini' bindtap='' form-type='submit'>提交</button>
       </view>
     </form>
+  </view>
+</view> -->
+<view class='page'>
+  <view class='container page-header'>
+    <text class='page-title'>工作详情</text>
+  </view>
+  <view class='page__bd'>
+    <view class="weui-cells__title">当事人资本资料</view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell">
+        <view class="weui-cell__bd">企业名称</view>
+        <view class="weui-cell__ft">{{workInfo.ep_name}}</view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">企业注册号</view>
+        <view class="weui-cell__ft">{{workInfo.ep_no}}</view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">企业状态</view>
+        <view class="weui-cell__ft">{{workInfo.ep_status}}</view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">法定代表人</view>
+        <view class="weui-cell__ft">{{workInfo.liaison_name}}</view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">联系电话</view>
+        <view class="weui-cell__ft">{{workInfo.ep_phone}}</view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">经营范围</view>
+        <view class="weui-cell__ft">{{workInfo.busi_limits}}</view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">地址</view>
+        <navigator url="" class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+          <view class="weui-cell__ft weui-cell__ft_in-access" bindtap='gotoLocation'>{{workInfo.business_address}}</view>
+        </navigator>
+      </view>
+    </view>
+    <view class="weui-cells__title">执法人员资料</view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell">
+        <view class="weui-cell__bd">执法人员</view>
+        <view wx:for="{{workInfo.check_users}}" wx:key="*this" wx:for-item="item" class='info'>
+          <view class="weui-cell__ft">{{item.user_name}};</view>
+        </view>
+      </view>
+      <view class="weui-cell">
+        <view class="weui-cell__bd">执法编号</view>
+        <view wx:for="{{workInfo.check_users}}" wx:key="*this" wx:for-item="item" class='info'>
+          <view class="weui-cell__ft">{{item.law_number}};</view>
+        </view>
+      </view>
+    </view>
+    <view class="weui-cells__title">检查情况</view>
+    <view wx:for="{{workInfo.matter}}" wx:key="*this" wx:for-item="item">
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell">
+          <view class="weui-cell__bd">事项编码</view>
+          <view class="weui-cell__ft">{{item.code}}</view>
+        </view>
+        <view class="weui-cell">
+          <view class="weui-cell__bd">事项名称</view>
+          <view class="weui-cell__ft">{{item.name}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="weui-cells__title">检查结果录入</view>
+    <view class="weui-cells weui-cells_after-title">
+      <navigator url="../workResultInput/workResultInput?status={{status}}&workId={{workId}}&work={{work}}" 
+        class="weui-cell weui-cell_access" hover-class="weui-cell_active">
+        <view class="weui-cell__bd">检查结果录入</view>
+        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+      </navigator>
+    </view>
   </view>
 </view>

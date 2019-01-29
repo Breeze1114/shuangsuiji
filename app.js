@@ -8,5 +8,6 @@ App({
     task_id: "",
     work_id: "",
     port:'http://10.1.40.150:4080',//端口号
+    authorization: '',
   }
 })

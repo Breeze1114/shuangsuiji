@@ -1,9 +1,9 @@
 <!--miniprogram/pages/workList/workList.wxml-->
-<view class='container'>
-  <view class='page-header'>
+<view class='page'>
+  <view class='container page-header'>
     <text class='page-title'>检查人员工作列表</text>
   </view>
-  <view class='page-body'>
+  <!-- <view class='page-body'>
     <block wx:for="{{workList}}" wx:for-item = "item">
       <view class='item' bindtap='showWorkDetail' id='{{item.id}}' data-status='{{item.state}}' data-work='{{item}}'>
         <view class='flex-row' style='display:flex' flex-wrap='nowrap'>
@@ -48,5 +48,86 @@
         </view>
       </view>
     </block>
+  </view> -->
+  <view class='page__bd'>
+    <view wx:for="{{workList}}" wx:key="*this" wx:for-item="item" bindtap='showWorkDetail' id='{{item.id}}' data-status='{{item.state}}'       data-work='{{item}}'>
+      <wux-wing-blank size="default">
+        <wux-white-space size="default" />
+        <wux-card title="{{item.ep_name}}" extra="" thumb="">
+          <!-- <view slot="body">
+            <label for='ep-no'>企业编码:
+              <text class='ep-no'>{{item.ep_no}}</text>
+            </label>
+          </view> -->
+          <!-- <view slot="body">
+            <label for='ep-name'>企业名称:
+              <text class='ep-name'>{{item.ep_name}}</text>
+            </label>
+          </view> -->
+          <!-- <view slot="body">
+            <label for='ep-status'>企业状态:
+              <text class='ep-status'>{{item.ep_status}}</text>
+            </label>
+          </view> -->
+          <view slot="body">
+            <!-- <label for='business-address'>企业地址:
+              <text class='business-address'>{{item.business_address}}</text>
+            </label> -->
+            <wux-row>
+              <wux-col span="3">
+                <view class="placeholder">企业地址:</view>
+              </wux-col>
+              <wux-col span="9">
+                <view>{{item.business_address}}</view>
+              </wux-col>
+            </wux-row>
+          </view>
+          <view slot="body">
+            <!-- <label for='liaison-name'>联系人:
+              <text class='liaison-name'>{{item.liaison_name}}</text>
+            </label> -->
+            <wux-row>
+              <wux-col span="3">
+                <view class="placeholder">联系人:</view>
+              </wux-col>
+              <wux-col span="9">
+                <view>{{item.liaison_name}}</view>
+              </wux-col>
+            </wux-row>
+          </view>
+          <view slot="body">
+            <wux-row>
+              <wux-col span="3">
+                <view class="placeholder">检查事项:</view>
+              </wux-col>
+              <wux-col span="9">
+                <view wx:for="{{item.matter}}" wx:for-item='matterItem'>
+                  <view>{{matterItem.name}}</view>
+                </view>
+              </wux-col>
+            </wux-row>
+            <!-- <label>检查事项:</label>
+            <view wx:for="{{item.matter}}" wx:for-item='matterItem'>
+              <view>{{matterItem.name}}</view>
+            </view> -->
+          </view>
+          <!-- <view slot="body">
+            <label for='busi-limits'>经营范围:
+              <text class='busi-limits'>{{item.busi_limits}}</text>
+            </label>
+          </view> -->
+          <!-- <view slot="body">
+            <label for='division-name'>所属地区:
+              <text class='division-name'>{{item.division_name}}</text>
+            </label>
+          </view> -->
+          <view slot="footer">
+            <label for='state'>抽查状态:
+              <text class='state'>{{item.state}}</text>
+            </label>
+          </view>
+        </wux-card>
+      </wux-wing-blank>
+    </view>
   </view>
 </view>

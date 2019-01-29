@@ -26,7 +26,7 @@ Page({
         rows: "10",
         state: "all"
       },
-      header: { 'Authorization': 'Bearer ' + app.globalData.token },
+      header: { 'Authorization': app.globalData.authorization },
       method: 'GET',
       dataType: 'json',
       responseType: 'text',

@@ -1,4 +1,6 @@
 /* miniprogram/pages/workList/workList.wxss */
+@import "../../style/weui.wxss";
+
 .page-header {
   display: flex;
   justify-content: center;

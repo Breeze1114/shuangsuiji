@@ -23,7 +23,7 @@ Page({
         page: 1,
         rows: 10
       },
-      header: { 'Authorization': 'Bearer ' + app.globalData.token },
+      header: { 'Authorization': app.globalData.authorization },
       method: 'GET',
       dataType: 'json',
       responseType: 'text',

@@ -1,20 +1,46 @@
 <!--index.wxml-->
-<view class='container'>
- <view class='header'>
-  <text>双随机登录</text>
- </view>
- <form bindsubmit='fromSubmit'>
-  <view class='section'>
-   <text>用户名:</text>
-   <input type='text' placeholder='请输入用户名' name='userName'/>
+<view class='page'>
+  <view class='container header'>
+    <text>双随机登录</text>
   </view>
-  <view class='section'>
-    <text>密码:</text>
-    <input type='password' placeholder='请输入密码' name='password'/>
+  <view class='page__bd'>
+    <form bindsubmit='fromSubmit'>
+      <!-- <view class='section'>
+      <text>用户名:</text>
+      <input type='text' placeholder='请输入用户名' name='userName' />
+    </view>
+    <view class='section'>
+      <text>密码:</text>
+      <input type='password' placeholder='请输入密码' name='password' />
+    </view>
+    <view class='button'>
+      <button type='primary' formType='submit'>登录</button>
+    </view> -->
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label">
+              <wux-icon type="md-contact" size="24" />
+            </view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input" placeholder="请输入用户名" name='userName' />
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label">
+              <wux-icon type="md-lock" size="24" />
+            </view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input" type='password' placeholder="请输入密码" name='password' />
+          </view>
+        </view>
+      </view>
+      <button class="weui-btn" type="primary" form-type='submit'>登录
+        <wux-icon type="ios-log-in" size="16" />
+      </button>
+    </form>
   </view>
-  <view class='button'>
-    <button type='primary' formType='submit'>登录</button>
-  </view>
- </form>
 </view>
-
