@@ -439,7 +439,10 @@ Page({
   submit: function (e) {
     var that = this;
     //先把图片上传,上传完文件后，再调用上传其他信息方法
-    that.uploadFile(that.data.tempImgPath);
+    var canSumbit = that.validateForm(that.data);
+    if (canSumbit){
+      that.uploadFile(that.data.tempImgPath);
+    }
   },
 
   //上传结果
@@ -496,7 +499,89 @@ Page({
     })
   },
 
-  //上传文件
+  //上传联合总表
+  uploadUnionFile: function (e) {
+    let port = app.globalData.port;
+    var that = this;
+    wx.showToast({//提示正在上传
+      title: '正在上传...',
+      icon: 'loading',
+      mask: true,
+      duration: 10000
+    })
+    var filePaths = e;
+    console.log("联合总表path：",filePaths);
+    if (filePaths.length > 0) {
+      var files = that.data.files;
+      var successNum = e.successNum ? e.successNum : 0;//上传成功次数
+      var failNum = e.failNum ? e.failNum : 0;//上传失败次数
+      var uploadTime = e.uploadTime ? e.uploadTime : 0;//上传次数
+      wx.uploadFile({
+        url: port + '/api/app/upload/result?type=union',
+        filePath: filePaths[uploadTime],
+        name: 'files',
+        header: {
+          'Authorization': app.globalData.authorization
+        },
+        success: function (res) {
+          var data = JSON.parse(res.data);
+          if (data.code === 0) {//上传请求成功状态码
+            //新增一个文件对象
+            var file = {
+              name: data.data.name,
+              status: data.data.status,
+              thumbUrl: data.data.thumbUrl,
+              uid: data.data.uid,
+              url: data.data.url,
+              type: data.data.type
+            }
+            //统计上传文件的个数
+            successNum += 1;
+            //把文件对象放在文件列表里
+            files.push(file);
+            console.log('上传成功次数:' + successNum + ',这是第' + (uploadTime + 1) + '次上传');
+            that.setData({
+              files: files
+            })
+          } else {
+            wx.showModal({
+              title: '错误提示',
+              content: '上传图片失败',
+              showCancel: false,
+              success: function (res) { }
+            })
+          }
+        },
+        fail: function (res) {
+          failNum += 1;
+          console.log('上传失败次数:' + failNum + ',这是第' + (uploadTime + 1) + '次上传');
+          wx.showModal({
+            title: '错误提示',
+            content: '上传图片失败',
+            showCancel: false,
+            success: function (res) { }
+          })
+        },
+        complete: function (res) {
+          uploadTime++;
+          if (uploadTime == e.length) {
+            wx.hideToast();
+            console.log('上传完毕，其中成功' + successNum + '次，失败' + failNum + '次');
+            that.submitResult();
+          } else {
+            e.successNum = successNum;
+            e.failNUm = failNum;
+            e.uploadTime = uploadTime;
+            that.uploadUnionFile(e);
+          }
+        },
+      })
+    } else {
+      that.submitResult();
+    }
+  },
+
+  //上传附件
   uploadFile: function (e) {
     let port = app.globalData.port;
     var that = this;
@@ -507,7 +592,8 @@ Page({
       duration: 10000
     })
     var filePaths = e;
-    console.log(filePaths);
+    var unionFilePaths = that.data.tempUnionImgPath;//联合总表的临时路径
+    console.log("附件path：",filePaths);
     if (filePaths.length > 0) {
       var files = that.data.files;
       var successNum = e.successNum ? e.successNum : 0;//上传成功次数
@@ -564,7 +650,11 @@ Page({
           if (uploadTime == e.length) {
             wx.hideToast();
             console.log('上传完毕，其中成功' + successNum + '次，失败' + failNum + '次');
-            that.submitResult();
+            if (unionFilePaths.length > 0){
+              that.uploadUnionFile(unionFilePaths);
+            }else{
+              that.submitResult();
+            }
           } else {
             e.successNum = successNum;
             e.failNUm = failNum;
@@ -573,10 +663,13 @@ Page({
           }
         },
       })
+    } else if (unionFilePaths.length > 0){
+      that.uploadUnionFile(unionFilePaths);
     } else {
       that.submitResult();
     }
   },
+
 
   //图片上传
   chooseImage: function (e) {
@@ -642,6 +735,7 @@ Page({
   delImg: function (e) {
     var that = this;
     var imgs = that.data.imgs;
+    var tempFilePath = that.data.tempImgPath;
     var files = that.data.files;//需要上传的附件信息
     var index = e.currentTarget.dataset.index;
     wx.showModal({
@@ -661,6 +755,12 @@ Page({
               files.splice(i, 1);
             }
           }
+          for (var j = 0; j < tempFilePath.length; j++) {
+            if (imgs[index].indexOf(tempFilePath[j]) != -1) {
+              tempFilePath.splice(j, 1);
+            }
+          }
+          //tempFilePath.splice((index - imgs.length), 1);//临时路径删除掉新加的图片
           imgs.splice(index, 1);
           console.log("确认删除了");
           console.log(files);
@@ -669,7 +769,8 @@ Page({
           return false;
         }
         that.setData({
-          imgs: imgs
+          imgs: imgs,
+          tempFilePath: tempFilePath
         })
       }
     })
@@ -679,6 +780,9 @@ Page({
   delUnionImg: function (e) {
     var that = this;
     var imgs = that.data.unionImgs;
+    var tempFilePath = that.data.tempUnionImgPath;
+    console.log(tempFilePath);
+    console.log(imgs);
     var files = that.data.files;//需要上传的附件信息
     var index = e.currentTarget.dataset.index;
     wx.showModal({
@@ -698,15 +802,23 @@ Page({
               files.splice(i, 1);
             }
           }
+          for(var j = 0;j<tempFilePath.length; j++){
+            if (imgs[index].indexOf(tempFilePath[j]) != -1) { 
+              tempFilePath.splice(j , 1);
+            }
+          }
+          //tempFilePath.splice((index-imgs.length), 1);
           imgs.splice(index, 1);
           console.log("确认删除了");
           console.log(files);
+          console.log(tempFilePath);
         } else if (res.cancel) {
           console.log("取消删除");
           return false;
         }
         that.setData({
-          unionImgs: imgs
+          unionImgs: imgs,
+          tempUnionImgPath: tempFilePath
         })
       }
     })
