@@ -26,7 +26,11 @@ Page({
     list: [],
     index: 0, //数组循环的下标
     listIndex: 0,
-    safeList: [], //作为中间量的结果list
+    safeList: {
+      result: [],//作为中间量的结果list
+      law:[],
+      remark:[]
+    }, 
     leaderList: [],
     approver: "请选择审核人员",
     approverId: '', //审批人id
@@ -57,6 +61,56 @@ Page({
       workInfo: work,
       isUnionHeadOrg: work.is_union_head_org
     });
+    
+    wx.request({
+      url: port + '/api/app/resultNameList',
+      data: '',
+      header: {
+        'Authorization': app.globalData.authorization
+      },
+      method: 'GET',
+      dataType: 'json',
+      responseType: 'text',
+      success: function (res) {
+        that.setData({
+          list: res.data.data
+        });
+        var arr = that.data.safeList.result;
+        var arr1 = that.data.safeList.law;
+        var arr2 = that.data.safeList.remark;
+        var list = that.data.list;
+        var workInfo = that.data.workInfo;
+        for (var j = 0; j < workInfo.matter.length; j++) {
+          workInfo.matter[j]['hidden'] = true;
+          workInfo.matter[j]['remarkHidden'] = true;
+        }
+        //给中间量的list初始化值
+        for (var i = 0; i < list.length; i++) {
+          arr.push("请输入检查结果");
+          arr1.push("");
+          arr2.push("");
+        }
+        that.setData({
+          workInfo: workInfo,
+          safeList: {
+            result: arr,
+            law: arr1,
+            remark: arr2
+          }
+        });
+        console.log("safelist", that.data.safeList);
+      },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '检查事项结果加载失败',
+          showCancel: false,
+          confirmText: '知道了',
+          success: function (res) { }
+        })
+      },
+      complete: function (res) { },
+    });
     jumpUrl = port + '/api/app/checkUser/work/' + that.data.workId + '/info';
     wx.request({
       url: jumpUrl,
@@ -72,7 +126,7 @@ Page({
           workResult: res.data.data
         });
         if (status === '已提交' || status === '已完成') {
-          //console.log('检查结果', res.data.data);
+          console.log('检查结果', res.data.data);
           var result = that.data.workResult.matter_check_result;
           var isPass = res.data.data.is_pass;
           var checked;
@@ -83,8 +137,21 @@ Page({
           }
           if (result != null) {
             var resultList = [];
+            var lawList = [];
+            var remarkList = [];
             for (var i = 0; i < result.length; i++) {
               resultList.push(result[i].result);
+              lawList.push(result[i].law);
+              remarkList.push(result[i].remark);
+            }
+          }
+          var workInfo = that.data.workInfo;
+          for (var k = 0; k < workInfo.matter.length; k++) {
+            if (resultList[k] != '未发现问题') {
+              workInfo.matter[k].hidden = false;
+            }
+            if (resultList[k] == '其他情形') {
+              workInfo.matter[k].remarkHidden = false;
             }
           }
           var files = [];//附件信息
@@ -103,12 +170,17 @@ Page({
             files = [];
           }
           that.setData({
+            workInfo: workInfo,
             date: {
               value: that.data.workResult.check_date,
               disabled: true
             },
             disabled: true,
-            safeList: resultList,
+            safeList: {
+              law: lawList,
+              remark: remarkList,
+              result: resultList
+            },
             approver: res.data.data.audit_user_name,
             checked: checked,
             checkResult: res.data.data.check_result,
@@ -117,56 +189,6 @@ Page({
             unionImgs: unionFiles,
             display: 'none'//不可再上传图片
           })
-        } else if (status === '暂存') {
-          //console.log('检查结果', res.data.data);
-          var result = that.data.workResult.matter_check_result;
-          var isPass = res.data.data.is_pass;
-          var checked;
-          if (isPass === '合格') {
-            checked = true;
-          } else if (isPass === '不合格') {
-            checked = false;
-          }
-          if (result != null) {
-            var resultList = [];
-            for (var i = 0; i < result.length; i++) {
-              resultList.push(result[i].result);
-            }
-          }
-          var files = [];//附件信息
-          var unionFiles = [];//联合总表信息
-          var data = res.data.data.files;
-          if (data.length > 0) {
-            //files = res.data.data.files;
-            for (var i = 0; i < data.length; i++) {
-              if (data[i].type != 'union') {
-                files.push(port + data[i].url);
-              } else {
-                unionFiles.push(port + data[i].url);
-              }
-            }
-          } else {
-            files = [];
-          }
-          var checkResult = res.data.data.check_result;//检查结果
-          that.setData({
-            date: {
-              value: that.data.workResult.check_date,
-              disabled: false
-            },
-            disabled: false,
-            safeList: resultList,
-            approver: res.data.data.audit_user_name,
-            approverId: res.data.data.audit_user_id,
-            checked: checked,
-            checkResult: checkResult,
-            placeholder: '', //提示文本清空
-            imgs: files,
-            unionImgs: unionFiles,
-            files: res.data.data.files,
-            radioValue: isPass,
-          })
-          //that.getStorage();
         } else {//如果是本地缓存状态，读取缓存
           that.getStorage();
         }
@@ -207,7 +229,7 @@ Page({
           title: '系统提示',
           content: '获取审批人员列表失败',
           showCancel: false,
-          confirmText: '返回上一层',
+          confirmText: '返回',
           success: function (res) {
             if (res.confirm) {
               wx.navigateBack({
@@ -215,40 +237,6 @@ Page({
               })
             }
           }
-        })
-      },
-      complete: function (res) { },
-    });
-    wx.request({
-      url: port + '/api/app/resultNameList',
-      data: '',
-      header: {
-        'Authorization': app.globalData.authorization
-      },
-      method: 'GET',
-      dataType: 'json',
-      responseType: 'text',
-      success: function (res) {
-        that.setData({
-          list: res.data.data
-        });
-        var arr = that.data.safeList;
-        var list = that.data.list;
-        //给中间量的list初始化值
-        for (var i = 0; i < list.length; i++) {
-          arr.push("请输入检查结果");
-        }
-        that.setData({
-          safeList: arr
-        });
-      },
-      fail: function (res) {
-        wx.showModal({
-          title: '系统提示',
-          content: '检查事项结果加载失败',
-          showCancel: false,
-          confirmText: '知道了',
-          success: function (res) { }
         })
       },
       complete: function (res) { },
@@ -268,14 +256,29 @@ Page({
   //选择检查结果值改变事件方法
   pickerValChange: function (e) {
     var that = this;
-    var arr = that.data.safeList;
+    var safeList = that.data.safeList;
+    var arr = safeList.result;
     var list = that.data.list;
     var value = e.detail.value;
     var index = e.currentTarget.dataset.index;
+    var workInfo = that.data.workInfo;
     //点击了哪个选择器，就修改哪个下标的值，然后就可以展示出去了
     arr[index] = list[value];
+    //如果不是未发现问题，就可以选填法律法规
+    if(arr[index] != '未发现问题'){
+      workInfo.matter[index].hidden = false;
+      if(arr[index] == '其他情形'){
+        workInfo.matter[index].remarkHidden = false;
+      }else{
+        workInfo.matter[index].remarkHidden = true;
+      }
+    }else{
+      workInfo.matter[index].hidden = true;
+    }
     that.setData({
-      safeList: arr
+      safeList: safeList,
+      workInfo: workInfo,
+      index: index,//更新一下下标
     })
   },
 
@@ -347,7 +350,7 @@ Page({
       })
       wx.setStorage({ //检查结果列表
         key: 'matterResult' + workId,
-        data: that.data.safeList,
+        data: that.data.safeList.result,
         success: function (res) { },
         fail: function (res) {
           wx.showModal({
@@ -418,15 +421,46 @@ Page({
         },
         complete: function (res) { },
       })
+      wx.setStorage({//法律法规
+        key: 'law' + workId,
+        data: that.data.safeList.law,
+        success: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '法律法规本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
+        complete: function (res) { },
+      })
+      wx.setStorage({//其他情形
+        key: 'remark' + workId,
+        data: that.data.safeList.remark,
+        success: function (res) { },
+        fail: function (res) {
+          wx.showModal({
+            title: '系统提示',
+            content: '其他情形本地缓存失败',
+            showCancel: false,
+            confirmText: '知道了'
+          })
+        },
+        complete: function (res) { },
+      })
+      console.log("缓存的safelist",that.data.safeList);
       wx.showToast({
         title: '暂存成功',
         icon: 'success',
-        duration: 20000,
+        duration: 1000,
         mask: true
       })
-      wx.navigateBack({
-        delta: 1,
-      })
+      setTimeout(function(){
+        wx.navigateBack({
+          delta: 2,
+        })
+      },1000)
     }
   },
 
@@ -456,19 +490,17 @@ Page({
       checkResultObj = {
         code: list[i].code,
         name: list[i].name,
-        result: that.data.safeList[i],
-        law: '',
-        remark: ''
+        result: that.data.safeList.result[i],
+        law: that.data.safeList.law[i],
+        remark: that.data.safeList.remark[i]
       }
       matterCheckResultList.push(checkResultObj);
     }
-    console.log('files:', that.data.files);
-    console.log('imgs:', that.data.imgs);
     wx.request({
       url: port + '/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
       data: {
         check_result: that.data.checkResult,
-        operate: '暂存',
+        operate: '提交审核',//暂定提交审核，到时候需要再改
         check_date: that.data.date.value,
         is_pass: that.data.radioValue,
         audit_user_id: that.data.approverId,
@@ -483,9 +515,37 @@ Page({
       dataType: 'json',
       responseType: 'text',
       success: function (res) {
-        wx.navigateBack({
-          delta: 1,
-        })
+        console.log(res);
+        if(res.data.code != 1){
+          setTimeout(function(){
+            wx.navigateBack({
+              delta: 2,
+            })
+          },1000)
+          wx.showToast({
+            title: '提交成功！',
+            icon: 'success',
+            duration: 1000,
+            mask: true,
+          })
+          that.clearStorage(app.globalData.work_id);//提交到服务器后移除本地的缓存
+        }else{
+          wx.showModal({
+            title: '提示',
+            content: res.data.msg,
+            showCancel: false,
+            confirmText: '返回',
+            success: function(res) {
+              if(res.confirm){
+                wx.navigateBack({
+                  delta: 2,
+                })
+              }
+            },
+            fail: function(res) {},
+            complete: function(res) {},
+          })
+        }
       },
       fail: function (res) {
         wx.showModal({
@@ -507,7 +567,7 @@ Page({
       title: '正在上传...',
       icon: 'loading',
       mask: true,
-      duration: 10000
+      duration: 1000
     })
     var filePaths = e;
     console.log("联合总表path：",filePaths);
@@ -589,7 +649,7 @@ Page({
       title: '正在上传...',
       icon: 'loading',
       mask: true,
-      duration: 10000
+      duration: 1000
     })
     var filePaths = e;
     var unionFilePaths = that.data.tempUnionImgPath;//联合总表的临时路径
@@ -682,13 +742,16 @@ Page({
           title: '正在上传...',
           icon: 'loading',
           mask: true,
-          duration: 1000
+          duration: 500
         })
         // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
-        that.setData({
-          imgs: that.data.imgs.concat(res.tempFilePaths),
-          tempImgPath: that.data.tempImgPath.concat(res.tempFilePaths)//把临时路径存起来
-        });
+        setTimeout(function(){
+          that.setData({
+            imgs: that.data.imgs.concat(res.tempFilePaths),
+            tempImgPath: that.data.tempImgPath.concat(res.tempFilePaths)//把临时路径存起来
+          });
+        },500)
+
       }
     })
   },
@@ -704,13 +767,15 @@ Page({
           title: '正在上传...',
           icon: 'loading',
           mask: true,
-          duration: 1000
+          duration: 500
         })
         // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
-        that.setData({
-          unionImgs: that.data.unionImgs.concat(res.tempFilePaths),
-          tempUnionImgPath: that.data.tempUnionImgPath.concat(res.tempFilePaths)//把临时路径存起来
-        });
+        setTimeout(function(){
+          that.setData({
+            unionImgs: that.data.unionImgs.concat(res.tempFilePaths),
+            tempUnionImgPath: that.data.tempUnionImgPath.concat(res.tempFilePaths)//把临时路径存起来
+          });
+        },500)
       }
     })
   },
@@ -868,6 +933,9 @@ Page({
 
   //获取本地缓存
   getStorage: function () {
+    var that = this;
+    var safeList = that.data.safeList;
+    var workInfo = that.data.workInfo;
     var checkDate;//检查日期
     var checkResult;//主要检查情况
     var radioValue;//是否合格
@@ -894,14 +962,7 @@ Page({
           }
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取检查日期缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) { },
       complete: function (res) { },
     })
     //主要检查情况
@@ -917,14 +978,7 @@ Page({
           checkResult: checkResult
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取主要检查情况缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) { },
       complete: function (res) { },
     })
     //是否合格
@@ -947,14 +1001,7 @@ Page({
           checked: checked
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取检查结果是否合格缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) {},
       complete: function (res) { },
     })
     //承办人意见
@@ -962,20 +1009,23 @@ Page({
       key: 'matterResult' + workId,
       success: function (res) {
         if (res.data) {
-          matterResultList = res.data;
+          safeList.result = res.data;
+          for (var i = 0; i < workInfo.matter.length; i++) {
+            if (safeList.result[i] != '未发现问题') {
+              workInfo.matter[i].hidden = false;
+            }
+            if (safeList.result[i] == '其他情形'){
+              workInfo.matter[i].remarkHidden = false;
+            }
+          }
         }
+        safeList = safeList;
         that.setData({
-          safeList: matterResultList,
+          safeList: safeList,
+          workInfo: workInfo,
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取承办人意见缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) {},
       complete: function (res) { },
     })
     //审批人
@@ -990,14 +1040,7 @@ Page({
           approverId: approver.approverId
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取审批人缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) {},
       complete: function (res) { },
     })
     //附件信息
@@ -1011,14 +1054,7 @@ Page({
           files: files
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取附件信息缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) {},
       complete: function (res) { },
     })
     //图片附件信息
@@ -1032,14 +1068,7 @@ Page({
           imgs: imgs
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取图片路径缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
-      },
+      fail: function (res) {},
       complete: function (res) { },
     })
 
@@ -1047,7 +1076,6 @@ Page({
     wx.getStorage({
       key: 'unionImgs' + workId,
       success: function (res) {
-        console.log(that.data);
         if (res.data.length > 0) {
           unionImgs = res.data;
         }
@@ -1055,19 +1083,76 @@ Page({
           unionImgs: unionImgs
         })
       },
-      fail: function (res) {
-        // wx.showModal({
-        //   title: '系统提示',
-        //   content: '获取联合总表缓存失败',
-        //   showCancel: false,
-        //   confirmText: '知道了'
-        // })
+      fail: function (res) {},
+      complete: function (res) { },
+    })
+
+    //法律法规
+    wx.getStorage({
+      key: 'law' + workId,
+      success: function (res) {
+        if (res.data) {
+          safeList.law = res.data;
+        }
+        that.setData({
+          safeList: safeList
+        })
       },
+      fail: function (res) { },
+      complete: function (res) { },
+    })
+
+    //其他情形
+    wx.getStorage({
+      key: 'remark' + workId,
+      success: function (res) {
+        if (res.data) {
+          safeList.remark = res.data;
+        }
+        that.setData({
+          safeList: safeList
+        })
+      },
+      fail: function (res) { },
       complete: function (res) { },
     })
     that.setData({
       disabled: false,
       placeholder: '' //提示文本清空
+    })
+  },
+
+  //清除指定的作业的本地缓存
+  clearStorage: function(workId){
+    wx.removeStorage({
+      key: 'checkDate' + workId,
+    })
+    wx.removeStorage({
+      key: 'checkResult' + workId,
+    })
+    wx.removeStorage({
+      key: 'checkValue' + workId,
+    })
+    wx.removeStorage({
+      key: 'matterResult' + workId,
+    })
+    wx.removeStorage({
+      key: 'approver' + workId,
+    })
+    wx.removeStorage({
+      key: 'files' + workId,
+    })
+    wx.removeStorage({
+      key: 'imgs' + workId,
+    })
+    wx.removeStorage({
+      key: 'unionImgs' + workId,
+    })
+    wx.removeStorage({
+      key: 'law' + workId,
+    })
+    wx.removeStorage({
+      key: 'remark' + workId,
     })
   },
 
@@ -1083,11 +1168,11 @@ Page({
       return false;
     }
     //默认的意见列表全是一样的“请输入检查意见”，通过判断有多少个一样的默认值来判断是否都选了
-    if (data.safeList) {
+    if (data.safeList.result) {
       var defaultNum = 0;//默认的结果个数
       var changeNum = 0;//改变了的结果个数
-      for (var i = 0; i < data.safeList.length; i++) {
-        if (data.safeList[i] === '请输入检查结果') {
+      for (var i = 0; i < data.safeList.result.length; i++) {
+        if (data.safeList.result[i] === '请输入检查结果') {
           defaultNum += 1;
         } else {
           changeNum += 1;
@@ -1115,13 +1200,13 @@ Page({
     if(data.isUnionHeadOrg){
       for(var i=0;i<data.files.length;i++){
         if(data.files[i].type === "union"){
-          return true;
+          
         }
       }
       if (data.tempUnionImgPath.length > 0){
-        return true;
+        
       }else if(data.unionImgs.length > 0){
-        return true;
+        
       }else{
         wx.showToast({
           title: '请上传联合总表!',
@@ -1132,6 +1217,47 @@ Page({
         return false;
       }
     }
+    for(var j=0;j<data.workInfo.matter.length;j++){
+      if (data.workInfo.matter[j].remarkHidden == false){
+        if(data.safeList.remark[j] != ''){
+          
+        }else{
+          wx.showToast({
+            title: '请输入其他情形!',
+            icon: 'none',
+            duration: 2000,
+            mask: true,
+          })
+          return false;
+        }
+      }
+    }
     return true;
+  },
+
+  //法律法规输入改变事件
+  lawChange: function(e){
+    var that = this;
+    var safeList = that.data.safeList;
+    var index = that.data.index;
+    if (e.detail) {
+      safeList.law[index] = e.detail.value;
+      that.setData({
+        safeList: safeList
+      })
+    }
+  },
+
+  //其他情形输入改变事件
+  remarkChange: function (e) {
+    var that = this;
+    var safeList = that.data.safeList;
+    var index = that.data.index;
+    if (e.detail) {
+      safeList.remark[index] = e.detail.value;
+      that.setData({
+        safeList: safeList
+      })
+    }
   }
 })

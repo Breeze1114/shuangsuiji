@@ -10,7 +10,8 @@ Page({
     token: app.globalData.token,
     taskId: app.globalData.task_id,
     workList: {},
-    taskStatus: ""
+    taskStatus: "",
+    storageKeys: [] //缓存key值
   },
 
   /**
@@ -19,6 +20,15 @@ Page({
   onLoad: function (options) {
     var that = this;
     let port = app.globalData.port;
+    wx.getStorageInfo({
+      success: function(res) {
+        that.setData({
+          storageKeys: res.keys,
+        })
+      },
+      fail: function(res) {},
+      complete: function(res) {},
+    })
     wx.request({
       url: port+'/api/app/checkUser/task/' + app.globalData.task_id + '/workList',
       data: {
@@ -31,9 +41,18 @@ Page({
       dataType: 'json',
       responseType: 'text',
       success: function (res) {
-        that.data.workList = res.data.data;
+        console.log('任务列表',res);
+        var workList = res.data.data;
+        var keys = that.data.storageKeys;
+        for(var i=0;i<keys.length;i++){
+          for(var j=0;j<workList.length;j++){
+            if(keys[i].indexOf(workList[j].id) != -1){
+              workList[j].state = '暂存';
+            }
+          }
+        }
         that.setData({
-          workList: res.data.data
+          workList: workList
         })
       },
       fail: function (res) { 
@@ -50,52 +69,11 @@ Page({
   },
 
   /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-
-  },
-
-  /**
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-
+    var that = this;
+    that.onLoad();
   },
 
   showWorkDetail: function (e) {

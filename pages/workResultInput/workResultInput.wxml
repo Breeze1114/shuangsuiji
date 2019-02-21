@@ -5,45 +5,7 @@
   </view>
   <view class='page__bd'>
     <form bindreset='reset' bindsubmit='submit'>
-        <!-- <view class="weui-cells__title">主要检查情况<span style='color:red'>*</span></view>
-        <view class="weui-cells weui-cells_after-title">
-            <view class="weui-cell">
-                <view class="weui-cell__bd">
-                    <textarea name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}' class='weui-textarea' 
-                      style="height: 5.5em" disabled='{{disabled}}' bindinput='tetxareaInput' value='{{checkResult}}' />
-                </view>
-            </view>
-        </view>
-        <view class="weui-cell">
-            <view class="weui-cell__hd">
-                <view class="weui-label">检查日期</view>
-            </view>
-            <view class="weui-cell__bd">
-                <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
-                  <view name='date' class='weui-input'>{{date.value}}</view>
-                </picker>
-            </view>
-        </view>
-        <view class="weui-cell weui-cell_input">
-            <view class="weui-cell__hd">
-                <view class="weui-label">是否合格</view>
-            </view>
-            <view class="weui-cell__bd">
-                <radio-group bindchange='checkChange' name='radioBox'>
-                  <radio disabled='{{disabled}}' value='合格' checked='{{checked}}'>合格</radio>
-                  <radio disabled='{{disabled}}' value='不合格' checked='{{!checked}}'>不合格</radio>
-                </radio-group>
-            </view>
-        </view> -->
-          <view class=''>
-            <view class='item-enter'>
-              <view class='item-title item-detail'>检查日期：</view>
-              <view class='item-detail'>
-                <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
-                  <view name='date' class='date-picker'>{{date.value}}</view>
-                </picker>
-              </view>
-            </view>
+          <view class='item'>
             <view class='item-enter'>
               <lable class='item-title'>主要检查情况
                 <span style='color:red'>*</span>：</lable>
@@ -59,21 +21,38 @@
               </view>
             </view>
             <view class='item-enter'>
+              <view class='item-title item-detail'>检查日期：</view>
+              <view class='item-detail'>
+                <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
+                  <view name='date' class='date-picker'>{{date.value}}</view>
+                </picker>
+              </view>
+            </view>
+            <view class='item-enter'>
               <lable class='item-title'>承办人意见
                 <span style='color:red'>*</span>：</lable>
               <view class='' wx:for='{{workInfo.matter}}' wx:key="*this" wx:for-item='item'>
                 <label>事项名称:{{item.name}}</label>
-                <picker name='matterResult' mode='selector' value='{{safeList[index]}}' range="{{list}}" disabled='{{disabled}}'                           data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
+                <picker name='matterResult' mode='selector' value='{{safeList.result[index]}}' range="{{list}}" disabled='{{disabled}}'                           data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
                   <view class='picker'>
-                    <view class='picker-text'>{{safeList[index]}}</view>
+                    <view class='picker-text'>{{safeList.result[index]}}</view>
                   </view>
                 </picker>
+                <view hidden='{{item.hidden}}' class='item-child'>
+                  <label>法律法规:</label>
+                  <input bindinput='lawChange' disabled='{{disabled}}' value='{{safeList.law[index]}}' placeholder='法律法规(选填)'/>
+                </view>
+                <view hidden='{{item.remarkHidden}}' class='item-child'>
+                  <label>其他情形<span style='color: red'>*</span>:</label>
+                  <input bindinput='remarkChange' disabled='{{disabled}}' value='{{safeList.remark[index]}}' placeholder='其他情形(必填)'/>
+                </view>
+                <view class='line'></view>
               </view>
             </view>
             <view class='item-enter'>
               <label class='item-title'>选择提交审计人员
                 <span style='color: red'>*</span>:</label>
-              <picker name='approver' mode='selector' value='{{leaderList[listIndex]}}' range='{{leaderList}}' range-key='user_name'                     disabled='{{disabled}}' bindchange='auditPickerChange'>
+              <picker name='approver' mode='selector'  value='{{leaderList[listIndex]}}' range='{{leaderList}}' range-key='user_name'                     disabled='{{disabled}}' bindchange='auditPickerChange'>
                 <view class='picker'>
                   <view class='picker-text'>{{approver}}</view>
                 </view>
