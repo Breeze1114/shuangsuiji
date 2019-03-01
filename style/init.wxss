@@ -1,0 +1,88 @@
+@charset "utf-8";
+
+html, body, dl, dt, dd, ul, li, h3, h4, pre, input, p, blockquote, th, td, form,
+iframe, ol {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: microsoft yahei, Arial, Helvetica, sans-serif;
+}
+
+ul {
+  list-style: none;
+}
+
+image {
+  border: 0;
+}
+
+q:before, q:after {
+  content: '';
+}
+
+iframe {
+  filter: chroma(color=#ffffff);
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.clear {
+  zoom: 1;
+}
+
+.clear:after {
+  clear: both;
+  content: "";
+  display: block;
+}
+
+button, input[type="button"], input[type="reset"], input[type="submit"] {
+  cursor: pointer;
+  -webkit-appearance: button;
+  overflow: visible; /* 为啥有个*号 ,加* 为了兼容ie7*/
+}
+
+input, code {
+  font-family: Microsoft yahei, Arial, Helvetica, sans-serif;
+}
+
+ul, dl, dl dt, dl dd, form {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+h1, h2, h3, h4, h5 {
+  padding: 0;
+  margin: 0;
+}
+
+input, textarea {
+  margin: 0;
+  font-family: microsoft yahei, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  outline: 0;
+}
+
+a {
+  color: #333;
+  text-decoration: none;
+  border: 0;
+  outline: 0;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a:focus {
+  outline: 0;
+}

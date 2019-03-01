@@ -1,7 +1,11 @@
 /* miniprogram/pages/workDetail/workDetail.wxss */
 @import "../../style/weui.wxss";
 
-.page-header {
+@import "../../style/init.wxss";
+
+@import "../../style/common.wxss";
+
+/* .page-header {
   display: flex;
   justify-content: center;
   border-bottom: 1rpx solid #ccc;
@@ -139,4 +143,4 @@
 .weui-cell__ft {
   text-align:left;
   color:black;
-}
+} */

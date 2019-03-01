@@ -1,41 +1,7 @@
 /**index.wxss**/
 @import "../../style/weui.wxss";
 
-.container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 200rpx 0;
-  box-sizing: border-box;
-}
-form{
-  width: 310px;
-  height: 240px;
-  line-height: 40px;
-  /* border: 1px solid red;  */
-}
-/* input{
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 310px;
-  height: 40px;
-} */
-button{
-  background-color: #33cd5f!important;
-  width: 95%;
-}
-.header text{
-  font-size: 25px;
-  color: #666;
-}
-form text{
-  font-size: 20px;
-  color: #666;
-}
+@import "../../style/init.wxss";
 
-.weui-label {
-  width: 80px;
-  text-align: center;
-}
+@import "../../style/common.wxss";
+

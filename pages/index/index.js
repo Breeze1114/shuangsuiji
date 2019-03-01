@@ -7,7 +7,8 @@ Page({
    * 页面的初始数据
    */
   data: {
-    
+    userName:"",
+    password:""
   },
 
   /**
@@ -53,9 +54,10 @@ Page({
       key: 'token',
       success: function (res) {
         if (res.data) {
+          console.log("token",res);
           app.globalData.token = res.data;
           app.globalData.authorization = 'Bearer ' + res.data;
-          wx.navigateTo({
+          wx.redirectTo({
             url: '../taskList/taskList',
             success: function (res) { },
             fail: function (res) { },
@@ -69,56 +71,21 @@ Page({
   },
 
   /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-
-  },
-
-  /**
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-
+    wx.setNavigationBarTitle({
+      title: '登录',
+    })
   },
 
   fromSubmit: function (e) {
-    if (e.detail.value.userName.length == 0 || e.detail.value.password.length == 0) {
+    // var userName = e.detail.value.userName;
+    // var password = e.detail.value.password;
+    var that = this;
+    var userName = that.data.userName;
+    var password = that.data.password;
+    if (userName.length == 0 || password.length == 0) {
       wx.showToast({
         title: '用户名和密码不能为空',
         icon: 'none',
@@ -127,12 +94,18 @@ Page({
         mask: true
       })
     } else {
+      wx.showToast({
+        title: '登录中',
+        icon: 'loading',
+        duration: 60000,
+        mask: true,
+      })
       let port = app.globalData.port;
       wx.request({
         url: port+'/api/auth',
         data: {
-          username: e.detail.value.userName,
-          password: base64.CusBASE64.encoder(e.detail.value.password)
+          username: userName,
+          password: base64.CusBASE64.encoder(password)
         },
         header: {
           'content-type': 'application/json'
@@ -142,11 +115,13 @@ Page({
         responseType: 'text',
         success: function (res) {
           if(res.data.code === 0){
+            console.log(res);
+            wx.hideToast();
             wx.showToast({
               title: '登录成功',
               icon: 'success',
               image: '',
-              duration: 2000,
+              duration: 500,
               mask: true
             })
             app.globalData.token = res.data.token;
@@ -170,12 +145,19 @@ Page({
               key: 'outTime',
               data: {
                 timestampCache: timestampCache,
-                outTime: 1200000
+                outTime: 604800000 //一个星期
               }
             })
-            wx.navigateTo({
-              url: '../taskList/taskList'
+            //缓存用户姓名
+            wx.setStorage({
+              key: 'userName',
+              data: res.data.fullname,
             })
+            setTimeout(function(){
+              wx.redirectTo({
+                url: '../taskList/taskList'
+              })
+            },500)
           }else{
             wx.showToast({
               title: '用户名或密码错误',
@@ -186,9 +168,38 @@ Page({
             })
           }
         },
-        fail: function (res) { console.log(res) },
+        fail: function (res) {
+          console.log(res);
+          if (res.errMsg == 'request:fail socket time out timeout:60000') {
+            wx.showModal({
+              title: '登录超时',
+              content: '请检查网络状态是否良好',
+              showCancel: false,
+              confirmText: '知道了',
+              success: function(res){
+                if(res.confirm){
+                  wx.hideToast();
+                }
+              }
+            })
+          }
+        },
         complete: function (res) { },
       })
     }
+  },
+
+  userNameChange: function(e){
+    var that = this;
+    that.setData({
+      userName: e.detail.value,
+    })
+  },
+
+  psdChange: function (e) {
+    var that = this
+    that.setData({
+      password: e.detail.value,
+    })
   }
 })

@@ -8,6 +8,8 @@ var qqmapsdk = new QQMapWX({
   key: '5ARBZ-WIR3K-2AIJN-AQCZC-YQLM6-KLBAQ' // 开发者秘钥
 });
 
+const fileSys = wx.getFileSystemManager();
+
 Page({
 
   /**
@@ -38,7 +40,7 @@ Page({
     checked: true, //是否选中
     placeholder: '请输入主要检查内容', //提示内容
     checkResult: '', //检查结果
-    radioValue: '', //单选框默认值
+    radioValue: '合格', //单选框默认值
     files: [],//最后上传到服务器的附件信息
     imgs: [],//在前端展示的图片路径信息
     unionImgs:[],//上传牵头总表图片
@@ -56,6 +58,10 @@ Page({
     var work = JSON.parse(options.work);
     var jumpUrl = '';
     var port = app.globalData.port;
+    console.log(that.data);
+    fileSys.getSavedFileList({
+      success(res){console.log("本地缓存的文件列表",res)}
+    })
     that.setData({
       workId: options.workId,
       workInfo: work,
@@ -98,7 +104,7 @@ Page({
             remark: arr2
           }
         });
-        console.log("safelist", that.data.safeList);
+        //console.log("safelist", that.data.safeList);
       },
       fail: function (res) {
         wx.showModal({
@@ -187,7 +193,7 @@ Page({
             placeholder: '', //提示文本清空
             imgs: files,
             unionImgs: unionFiles,
-            display: 'none'//不可再上传图片
+            display: "none"//不可再上传图片
           })
         } else {//如果是本地缓存状态，读取缓存
           that.getStorage();
@@ -271,9 +277,16 @@ Page({
         workInfo.matter[index].remarkHidden = false;
       }else{
         workInfo.matter[index].remarkHidden = true;
+        //把填好的法律法规和其他情况清空
+        safeList.remark[index] = "";
+        safeList.law[index] = "";
       }
     }else{
+      workInfo.matter[index].remarkHidden = true;
       workInfo.matter[index].hidden = true;
+      //把填好的法律法规和其他情况清空
+      safeList.remark[index] = "";
+      safeList.law[index] = ""; 
     }
     that.setData({
       safeList: safeList,
@@ -291,13 +304,28 @@ Page({
     })
   },
 
-  //单选框勾选变化事件
+  // //单选框勾选变化事件
+  // checkChange: function (e) {
+  //   var that = this;
+  //   that.setData({
+  //     radioValue: e.detail.value
+  //   })
+  // },
+
+  //选择是否合格值改变事件
   checkChange: function (e) {
     var that = this;
+    var val;
+    if (e.detail.value === "0"){
+      val = "合格";
+    }else{
+      val = "不合格";
+    }
     that.setData({
-      radioValue: e.detail.value
+      radioValue: val
     })
   },
+
 
   //本地输入数据缓存
   saveEntry: function (e) {
@@ -393,34 +421,120 @@ Page({
         },
         complete: function (res) { },
       })
-      wx.setStorage({//普通图片
-        key: 'imgs' + workId,
-        data: that.data.imgs,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '图片路径本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      wx.setStorage({//联合总表图片
-        key: 'unionImgs' + workId,
-        data: that.data.unionImgs,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '联合总表本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
+
+      //选择上传图片后，获得的路径是临时文件的临时路径，
+      //所以需要把临时文件存起来，不然在一段时间过后，临时路径会访问不到该文件
+      var tempList = [];
+      var tempUnionList = [];
+      var imgPath = that.data.imgs;
+      var imgList = that.data.imgs;
+      var unionPath = that.data.imgs;
+      var unionList = that.data.imgs;
+      //先删除掉那些临时的路径
+      for (let j = 0; j < imgList.length; j++) {
+        if (imgList[j].indexOf("tmp") != -1) {
+          imgPath.splice(j, 1);
+        }
+      }
+      for (let j = 0; j < unionList.length; j++) {
+        if (unionList[j].indexOf("tmp") != -1) {
+          unionPath.splice(j, 1);
+        }
+      }
+      for (var i = 0; i < that.data.tempImgPath.length; i++) {
+        fileSys.saveFile({
+          tempFilePath: that.data.tempImgPath[i],
+          success(res) {
+            tempList.push(res.savedFilePath);
+            fileSys.getSavedFileList({
+              success(res) { console.log(res) }
+            })
+          },
+          fail(res) {
+            console.log(res);
+            fileSys.getSavedFileList({
+              success(res) { console.log(res) }
+            })
+            wx.showModal({
+              title: '错误提示',
+              content: '上传文件报错，请尽快联系管理员',
+              showCancel: false,
+              confirmText: '知道了',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            })
+          },
+        });
+      }
+
+      for (var i = 0; i < that.data.tempUnionImgPath.length; i++) {
+        fileSys.saveFile({
+          tempFilePath: that.data.tempUnionImgPath[i],
+          success(res) {
+            tempUnionList.push(res.savedFilePath);
+            fileSys.getSavedFileList({
+              success(res) { console.log(res) }
+            })
+          },
+          fail(res) {
+            console.log(res);
+            fileSys.getSavedFileList({
+              success(res) { console.log(res) }
+            })
+            wx.showModal({
+              title: '错误提示',
+              content: '上传文件报错，请尽快联系管理员',
+              showCancel: false,
+              confirmText: '知道了',
+              success: function (res) { },
+              fail: function (res) { },
+              complete: function (res) { },
+            })
+          },
+        });
+      }
+      setTimeout(function () {
+        that.setData({
+          imgs: that.data.imgs.concat(tempList),
+          tempImgPath: that.data.tempImgPath.concat(tempList),//把路径存起来
+          unionImgs: that.data.unionImgs.concat(tempUnionList),
+          tempUnionImgPath: that.data.tempUnionImgPath.concat(tempUnionList)
+        });
+      }, 600)
+
+      setTimeout(function(){ 
+        //缓存普通图片
+        wx.setStorage({
+          key: 'imgs' + workId,
+          data: that.data.imgs,
+          success: function (res) { },
+          fail: function (res) {
+            wx.showModal({
+              title: '系统提示',
+              content: '图片路径本地缓存失败',
+              showCancel: false,
+              confirmText: '知道了'
+            })
+          },
+          complete: function (res) { },
+        })
+
+        wx.setStorage({//联合总表图片
+          key: 'unionImgs' + workId,
+          data: that.data.unionImgs,
+          success: function (res) { },
+          fail: function (res) {
+            wx.showModal({
+              title: '系统提示',
+              content: '联合总表本地缓存失败',
+              showCancel: false,
+              confirmText: '知道了'
+            })
+          },
+          complete: function (res) { },
+        })
+      }, 800)
       wx.setStorage({//法律法规
         key: 'law' + workId,
         data: that.data.safeList.law,
@@ -457,16 +571,12 @@ Page({
         mask: true
       })
       setTimeout(function(){
+        console.log(getCurrentPages)
         wx.navigateBack({
           delta: 2,
         })
       },1000)
     }
-  },
-
-  //重置
-  reset: function (e) {
-
   },
 
   //提交到服务器保存
@@ -475,7 +585,7 @@ Page({
     //先把图片上传,上传完文件后，再调用上传其他信息方法
     var canSumbit = that.validateForm(that.data);
     if (canSumbit){
-      that.uploadFile(that.data.tempImgPath);
+      that.uploadFile(that.data.imgs);
     }
   },
 
@@ -500,7 +610,7 @@ Page({
       url: port + '/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
       data: {
         check_result: that.data.checkResult,
-        operate: '提交审核',//暂定提交审核，到时候需要再改
+        operate: '暂存',//暂定提交审核，到时候需要再改
         check_date: that.data.date.value,
         is_pass: that.data.radioValue,
         audit_user_id: that.data.approverId,
@@ -528,6 +638,8 @@ Page({
             duration: 1000,
             mask: true,
           })
+          that.delSavedImage(that.data.imgs);//删除本地缓存的图片信息
+          that.delSavedImage(that.data.unionImgs);
           that.clearStorage(app.globalData.work_id);//提交到服务器后移除本地的缓存
         }else{
           wx.showModal({
@@ -652,7 +764,7 @@ Page({
       duration: 1000
     })
     var filePaths = e;
-    var unionFilePaths = that.data.tempUnionImgPath;//联合总表的临时路径
+    var unionFilePaths = that.data.unionImgs;//联合总表的临时路径
     console.log("附件path：",filePaths);
     if (filePaths.length > 0) {
       var files = that.data.files;
@@ -735,7 +847,7 @@ Page({
   chooseImage: function (e) {
     var that = this;
     wx.chooseImage({
-      sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+      sizeType: ['compressed'], // 可以指定是原图还是压缩图，默认二者都有
       sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
       success: function (res) {
         wx.showToast({//提示正在上传
@@ -743,15 +855,16 @@ Page({
           icon: 'loading',
           mask: true,
           duration: 500
-        })
+        });
         // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
         setTimeout(function(){
           that.setData({
             imgs: that.data.imgs.concat(res.tempFilePaths),
             tempImgPath: that.data.tempImgPath.concat(res.tempFilePaths)//把临时路径存起来
           });
+          console.log(that.data.imgs);
+          console.log(that.data.tempImgPath);
         },500)
-
       }
     })
   },
@@ -760,7 +873,7 @@ Page({
   chooseUnionFile: function (e) {
     var that = this;
     wx.chooseImage({
-      sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+      sizeType: ['compressed'], // 可以指定是原图还是压缩图，默认二者都有
       sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机，默认二者都有
       success: function (res) {
         wx.showToast({//提示正在上传
@@ -825,7 +938,11 @@ Page({
               tempFilePath.splice(j, 1);
             }
           }
-          //tempFilePath.splice((index - imgs.length), 1);//临时路径删除掉新加的图片
+          fileSys.removeSavedFile({
+            filePath: imgs[index],
+            success: function (res) { console.log("删除成功！") },
+            fail: function (res) { console.log(res) },
+          })
           imgs.splice(index, 1);
           console.log("确认删除了");
           console.log(files);
@@ -872,7 +989,11 @@ Page({
               tempFilePath.splice(j , 1);
             }
           }
-          //tempFilePath.splice((index-imgs.length), 1);
+          fileSys.removeSavedFile({
+            filePath: imgs[index],
+            success: function (res) { console.log("删除成功！") },
+            fail: function (res) { console.log(res) },
+          })
           imgs.splice(index, 1);
           console.log("确认删除了");
           console.log(files);
@@ -885,38 +1006,6 @@ Page({
           unionImgs: imgs,
           tempUnionImgPath: tempFilePath
         })
-      }
-    })
-  },
-
-  //导航方法
-  gotoLocation: function (e) {
-    var that = this;
-    //地址转坐标
-    qqmapsdk.geocoder({
-      address: that.data.workInfo.business_address, //地址参数，例：固定地址，address: '北京市海淀区彩和坊路海淀西大街74号'
-      success: function (res) {//成功后的回调
-        console.log(res);
-        var res = res.result;
-        var latitude = res.location.lat;
-        var longitude = res.location.lng;
-        //根据经纬度，打开导航
-        wx.openLocation({
-          latitude: latitude,
-          longitude: longitude,
-          scale: 18,
-          name: that.data.workInfo.business_address,
-          address: that.data.workInfo.business_address,
-          success: function (res) { console.log(res) },
-          fail: function (res) { },
-          complete: function (res) { },
-        })
-      },
-      fail: function (error) {
-        console.error(error);
-      },
-      complete: function (res) {
-        console.log(res);
       }
     })
   },
@@ -986,6 +1075,7 @@ Page({
       key: 'checkValue' + workId,
       success: function (res) {
         var checked;
+        console.log("是狗合格",res.data)
         if (res.data) {
           radioValue = res.data;
         } else {
@@ -995,6 +1085,9 @@ Page({
           checked = true;
         } else if (radioValue === '不合格') {
           checked = false;
+        } else if (radioValue === ''){//默认不选的时候，为合格
+          checked = true;
+          radioValue = '合格';
         }
         that.setData({
           radioValue: radioValue,
@@ -1053,6 +1146,7 @@ Page({
         that.setData({
           files: files
         })
+        console.log("附件信息",res.data);
       },
       fail: function (res) {},
       complete: function (res) { },
@@ -1067,6 +1161,7 @@ Page({
         that.setData({
           imgs: imgs
         })
+        console.log("图片信息", res.data);
       },
       fail: function (res) {},
       complete: function (res) { },
@@ -1082,6 +1177,7 @@ Page({
         that.setData({
           unionImgs: unionImgs
         })
+        console.log("联合总表信息", res.data);
       },
       fail: function (res) {},
       complete: function (res) { },
@@ -1258,6 +1354,20 @@ Page({
       that.setData({
         safeList: safeList
       })
+    }
+  },
+
+  //删除本地缓存的图片文件
+  delSavedImage: function(imgsPath){
+    if(imgsPath.length>0){
+      for (let i = 0; i < imgsPath.length; i++) {
+        fileSys.removeSavedFile({
+          filePath: imgsPath[i],
+          success: function (res) { console.log("删除成功！") },
+          fail: function (res) { console.log(res) },
+          complete: function (res) { },
+        })
+      }
     }
   }
 })

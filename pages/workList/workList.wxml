@@ -1,72 +1,44 @@
 <!--miniprogram/pages/workList/workList.wxml-->
-<view class='page'>
-  <view class='container page-header'>
-    <text class='page-title'>检查人员工作列表</text>
-  </view>
-  <view class='page__bd'>
-    <view wx:for="{{workList}}" wx:key="*this" wx:for-item="item" bindtap='showWorkDetail' id='{{item.id}}' data-status='{{item.state}}'       data-work='{{item}}'>
-      <wux-wing-blank size="default">
-        <wux-white-space size="default" />
-        <wux-card title="{{item.ep_name}}" extra="" thumb="">
-          <view slot="body">
-            <!-- <label for='business-address'>企业地址:
-              <text class='business-address'>{{item.business_address}}</text>
-            </label> -->
-            <wux-row>
-              <wux-col span="3">
-                <view class="placeholder">企业地址:</view>
-              </wux-col>
-              <wux-col span="9">
-                <view>{{item.business_address}}</view>
-              </wux-col>
-            </wux-row>
+<view class='body'>
+  <view class="work-list">
+    <view wx:for="{{workList}}" wx:key="*this" wx:for-item="item">
+      <view class="work-list-main">
+        <view class="work-list-title clear">
+          <image src="../../images/ico-company.png" style="width:20px;height:20px;" class="left" />
+          <view class="work-title-name left">{{item.ep_name}}</view>
+          <!-- <image src="../../images/gray-arrow.png" style="width:20px;height:20px;" class="right" /> -->
+          <view class="work-title-right right" id='{{item.id}}' data-status='{{item.state}}' data-work='{{item}}' bindtap='turntoInput'>
+            <image src="../../images/work-title-entering.png" style="width:20px;height:20px;"/>
+            <view class="work-title-right-txt">录入</view>
           </view>
-          <view slot="body">
-            <!-- <label for='liaison-name'>联系人:
-              <text class='liaison-name'>{{item.liaison_name}}</text>
-            </label> -->
-            <wux-row>
-              <wux-col span="3">
-                <view class="placeholder">联系人:</view>
-              </wux-col>
-              <wux-col span="9">
-                <view>{{item.liaison_name}}</view>
-              </wux-col>
-            </wux-row>
+        </view>
+        <view class="work-list-content" bindtap='showWorkDetail' id='{{item.id}}' data-status='{{item.state}}' data-work='{{item}}'>
+          <view class="work-list-content-main clear">
+            <image src="../../images/ico-address.png" style="width:20px;height:20px;" class="left" />
+            <view class="work-list-content-title left">企业地址：</view>
+            <view class="work-list-content-name left">{{item.business_address}}</view>
           </view>
-          <view slot="body">
-            <wux-row>
-              <wux-col span="3">
-                <view class="placeholder">检查事项:</view>
-              </wux-col>
-              <wux-col span="9">
-                <view wx:for="{{item.matter}}" wx:for-item='matterItem'>
-                  <view>{{matterItem.name}}</view>
-                </view>
-              </wux-col>
-            </wux-row>
-            <!-- <label>检查事项:</label>
-            <view wx:for="{{item.matter}}" wx:for-item='matterItem'>
-              <view>{{matterItem.name}}</view>
-            </view> -->
+          <view class="work-list-content-main clear">
+            <image src="../../images/ico-linkman.png" style="width:20px;height:20px;" class="left" />
+            <view class="work-list-content-title left">联系人：</view>
+            <view class="work-list-content-name left">{{item.liaison_name}}</view>
           </view>
-          <!-- <view slot="body">
-            <label for='busi-limits'>经营范围:
-              <text class='busi-limits'>{{item.busi_limits}}</text>
-            </label>
-          </view> -->
-          <!-- <view slot="body">
-            <label for='division-name'>所属地区:
-              <text class='division-name'>{{item.division_name}}</text>
-            </label>
-          </view> -->
-          <view slot="footer">
-            <label for='state'>抽查状态:
-              <text class='state'>{{item.state}}</text>
-            </label>
+          <view class="work-list-content-main clear">
+            <image src="../../images/ico-item.png" style="width:20px;height:20px;" class="left" />
+            <view class="work-list-content-title left">检查事项：</view>
+            <view class="work-list-content-name left">
+              <view wx:for="{{item.matter}}" wx:for-item='matterItem'>
+                <view>{{matterItem.name}}</view>
+              </view>
+            </view>
           </view>
-        </wux-card>
-      </wux-wing-blank>
+          <view class="work-list-content-main red-txt clear">
+            <image src="../../images/ico-empty.png" style="width:20px;height:20px;" class="left" />
+            <view class="work-list-content-title left">抽查状态：</view>
+            <view class="work-list-content-name left">{{item.state}}</view>
+          </view>
+        </view>
+      </view>
     </view>
   </view>
 </view>
