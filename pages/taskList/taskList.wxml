@@ -2,11 +2,11 @@
 <view class='body'>
 	<view class="my-info clear">
 		<view class="my-info-left left">
-			<view class="my-name">{{userName}}</view>
-			<view class="my-dept">江门市工商行政管理局</view>
+			<view class="my-name">{{userFullName}}</view>
+			<view class="my-dept">{{userOrgName}}</view>
 		</view>
 		<view class="my-info-right right">
-			<img src="../../images/ico-exit.png" style="width:20px;height:20px;"/>
+			<image src="../../images/ico-exit.png" style="width:20px;height:20px;"/>
       <view class="my-info-right-txt" bindtap='logout'>账号登出</view>
 		</view>
 	</view>

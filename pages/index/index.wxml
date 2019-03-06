@@ -2,7 +2,7 @@
 <view class=''>
   <view class='body'>
     <view class="login">
-      <image src="../../images/login-pic.png" alt="" />
+      <image src="../../images/login-pic.png" alt="" mode='aspectFit' />
       <view class="login-box">
         <view class="login-main-box">
           <view class="login-main-content">
@@ -12,7 +12,6 @@
             <input type="password" class="input-txt input-pwd" bindinput='psdChange' placeholder="请输入密码" value='{{password}}' />
           </view>
         </view>
-        <!-- <view class="login-btn" form-type='submit'>登 录</view>  -->
         <view class="login-btn" bindtap='fromSubmit'>登 录</view>
       </view>
     </view>

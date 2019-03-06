@@ -1,158 +1,73 @@
 <!--pages/workResultInput/workResultInput.wxml-->
-<view class='page'>
-  <!-- <view class='container page-header'>
-    <text class='page-title'>检查结果录入</text>
-  </view> -->
-  <!-- <view class='page__bd'>
-    <form bindreset='reset' bindsubmit='submit'>
-      <view class='item'>
-        <view class='item-enter'>
-          <lable class='item-title'>主要检查情况
-            <span style='color:red'>*</span>：</lable>
-          <textarea name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}' class='text-area' disabled='{{disabled}}'                    bindinput='tetxareaInput' value='{{checkResult}}' />
-        </view>
-        <view class='check-group'>
-          <view class='check-box item-title'>是否合格：</view>
-          <view class='check-box'>
-            <radio-group bindchange='checkChange' name='radioBox'>
-              <radio disabled='{{disabled}}' value='合格' checked='{{checked}}'>合格</radio>
-              <radio disabled='{{disabled}}' value='不合格' checked='{{!checked}}'>不合格</radio>
-            </radio-group>
-          </view>
-        </view>
-        <view class='item-enter'>
-          <view class='item-title item-detail'>检查日期：</view>
-          <view class='item-detail'>
-            <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
-              <view name='date' class='date-picker'>{{date.value}}</view>
-            </picker>
-          </view>
-        </view>
-        <view class='item-enter'>
-          <lable class='item-title'>承办人意见
-            <span style='color:red'>*</span>：</lable>
-          <view class='' wx:for='{{workInfo.matter}}' wx:key="*this" wx:for-item='item'>
-            <label>事项名称:{{item.name}}</label>
-            <picker name='matterResult' mode='selector' value='{{safeList.result[index]}}' range="{{list}}" disabled='{{disabled}}'                           data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
-              <view class='picker'>
-                <view class='picker-text'>{{safeList.result[index]}}</view>
-              </view>
-            </picker>
-            <view hidden='{{item.hidden}}' class='item-child'>
-              <label>法律法规:</label>
-              <input bindinput='lawChange' disabled='{{disabled}}' value='{{safeList.law[index]}}' placeholder='法律法规(选填)'/>
-            </view>
-            <view hidden='{{item.remarkHidden}}' class='item-child'>
-              <label>其他情形<span style='color: red'>*</span>:</label>
-              <input bindinput='remarkChange' disabled='{{disabled}}' value='{{safeList.remark[index]}}' placeholder='其他情形(必填)'/>
-            </view>
-            <view class='line'></view>
-          </view>
-        </view>
-        <view class='item-enter'>
-          <label class='item-title'>选择提交审计人员
-            <span style='color: red'>*</span>:</label>
-          <picker name='approver' mode='selector'  value='{{leaderList[listIndex]}}' range='{{leaderList}}' range-key='user_name'                     disabled='{{disabled}}' bindchange='auditPickerChange'>
-            <view class='picker'>
-              <view class='picker-text'>{{approver}}</view>
-            </view>
-          </picker>
-        </view>
-        <view class='item-enter'>
-          <view class='item-title'>检查附件：
-            <view class="weui-cells">
-              <view class="weui-cell">
-                <view class="weui-cell__bd">
-                  <view class='weui-uploader'>
-                    <view class="weui-uploader__bd">
-                      <view class="weui-uploader__files" id="uploaderFiles">
-                        <block wx:for="{{imgs}}" wx:key="*this">
-                          <view class="weui-uploader__file" data-index='{{index}}' bindtap="previewImage" 
-                            bindlongpress='delimage' id="{{item}}">
-                            <image class="weui-uploader__image" src="{{item}}" mode="aspectFill" />
-                          </view>
-                        </block>
-                      </view>
-                      <view class="weui-uploader__input-box">
-                        <view class="weui-uploader__input" bindtap="chooseImage" style="display: {{display}};"></view>
-                      </view>
-                    </view>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
-        </view>
-        <view class='item-enter' hidden='{{!isUnionHeadOrg}}'>
-          <view class='item-title'>联合总表<span style='color:red'>*</span>：
-            <view class="weui-cells">
-              <view class="weui-cell">
-                <view class="weui-cell__bd">
-                  <view class='weui-uploader'>
-                    <view class="weui-uploader__bd">
-                      <view class="weui-uploader__files" id="uploaderFiles">
-                        <block wx:for="{{unionimages}}" wx:key="*this">
-                          <view class="weui-uploader__file" data-index='{{index}}' bindtap="previewUnionImage" 
-                            bindlongpress='delUnionimage' id="{{item}}">
-                            <image class="weui-uploader__image" src="{{item}}" mode="aspectFill" />
-                          </view>
-                        </block>
-                      </view>
-                      <view class="weui-uploader__input-box">
-                        <view class="weui-uploader__input" bindtap="chooseUnionFile" style="display: {{display}};"></view>
-                      </view>
-                    </view>
-                  </view>
-                </view>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-      <view class='button-sp-area' hidden='{{disabled}}'>
-        <button class='weui-btn mini-btn' type='warn' size='mini' form-type='reset'>重置</button>
-        <button class='weui-btn mini-btn' type='default' size='mini' bindtap='saveEntry'>暂存</button>
-        <button class='weui-btn mini-btn' type='primary' size='mini' bindtap='' form-type='submit'>提交</button>
-      </view>
-    </form>
-  </view> -->
+<view class='body'>
   <view class="entering">
   <view class="entering-box">
-			<view class="entering-box-title">
+			<!-- <view class="entering-box-title">
 				<image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>
         <view>主要检查情况<view class="red-star">*</view></view>
-			</view>
-			<view class="entering-content">
-				<!-- <textarea class="input-textarea input-textarea-long" placeholder="请输入检查结果"></textarea> -->
+			</view> -->
+			<!-- <view class="entering-content">
         <textarea class="input-textarea input-textarea-long" name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}'
           disabled='{{disabled}}' bindinput='tetxareaInput' value='{{checkResult}}' />
-			</view>
+			</view> -->
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>  
+          <view>主要检查情况<view class="red-star">*</view></view>
+        </view>
+      </view>
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell">
+          <view class="weui-cell__bd">
+            <textarea class="weui-textarea" name='checkResult' placeholder='{{checkResult?"":"请输入检查结果"}}'
+          disabled='{{disabled}}' bindinput='tetxareaInput' value='{{checkResult}}' />
+          </view>
+        </view>
+      </view>
 		</view>
 		<view class="entering-box">
-			<view class="entering-box-title">
+			<!-- <view class="entering-box-title">
 				<image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>
         <view>是否合格</view>
 			</view>
 			<view class="entering-content">
-				<!-- <select class="input-select input-select-long">
-					<option>合格</option>
-					<option>不合格</option>
-				</select> -->
         <picker class="input-select-long" name='approver' mode='selector'  value='0'
          range="{{['合格','不合格']}}" disabled='{{disabled}}' bindchange='checkChange'>
           <option>{{radioValue}}</option>
         </picker>
-			</view>
+			</view> -->
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>  
+          <view class="weui-label">是否合格:</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker name='approver' mode='selector' value='0' range="{{['合格','不合格']}}" disabled='{{disabled}}' bindchange='checkChange'>
+            <view class="weui-select weui-select_in-select-after right">{{radioValue}}</view>
+          </picker>
+        </view>
+      </view>
 		</view>
 		<view class="entering-box">
-			<view class="entering-box-title">
+			<!-- <view class="entering-box-title">
 				<image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/><view>检查日期</view>
 			</view>
 			<view class="entering-content">
         <picker mode='date' fields='day' bindchange='showDate' disabled='{{date.disabled}}'>
           <view class="input-select-long">{{date.value}}</view>
         </picker>
-			</view>
+			</view> -->
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>  
+          <view class="weui-label">检查日期:</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker mode='date' fields='day' start='2000-01-01' end='{{today}}' bindchange='showDate' disabled='{{date.disabled}}'>
+            <view class="weui-select weui-select_in-select-after right">{{date.value}}</view>
+          </picker>
+        </view>
+      </view>
 		</view>
 		<view class="entering-box">
 			<view class="entering-box-title">
@@ -166,39 +81,75 @@
               <view class="entering-content-title left">事项名称：</view>
               <view class="entering-content-name left">{{item.name}}</view>
             </view>
-            <picker class="input-select" name='matterResult' mode='selector' value='{{safeList.result[index]}}' 
+            <!-- <picker class="input-select" name='matterResult' mode='selector' value='{{safeList.result[index]}}' 
             range="{{list}}" disabled='{{disabled}}'data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
               <option>{{safeList.result[index]}}</option>
-            </picker>
+            </picker> -->
+            <view class="weui-cell__bd">
+              <picker name='matterResult' mode='selector' value='{{safeList.result[index]}}' 
+                range="{{list}}" disabled='{{disabled}}'data-id='{{item.code}}' data-index='{{index}}' bindchange='pickerValChange'>
+                <view class="weui-select weui-select_in-select-after" style='text-align: left;border:0'>{{safeList.result[index]}}</view>
+              </picker>
+            </view>
             <view hidden="{{item.hidden}}" class="entering-content-main clear">
-              <view class="entering-content-title entering-law-title left">法律法规：</view>
+              <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                  <view class="weui-label">法律法规:</view>
+                </view>
+                <view class="weui-cell__bd">
+                  <input class="weui-input" type="text" bindinput='lawChange' 
+                    disabled='{{disabled}}'value='{{safeList.law[index]}}' placeholder="法律法规（选填）"/>
+                </view>
+              </view>
+              <!-- <view class="entering-content-title entering-law-title left">法律法规：</view>
               <view class="entering-content-name left">
                 <input type="text" class="input-txt" 
                 bindinput='lawChange' disabled='{{disabled}}' value='{{safeList.law[index]}}' placeholder="法律法规（选填）" />
-              </view>
+              </view> -->
             </view>
             <view hidden="{{item.remarkHidden}}" class="entering-content-main clear">
-              <view class="entering-content-title left">其他情形<view class="red-star">*</view>：</view>
+              <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                  <view class="weui-label">其他情形<view class="red-star">*</view>:</view>
+                </view>
+                <view class="weui-cell__bd">
+                  <input class="weui-input" type="text" bindinput='remarkChange'
+                  disabled='{{disabled}}' value='{{safeList.remark[index]}}' placeholder='其他情形(必填)'/>
+                </view>
+              </view>
+              <!-- <view class="entering-content-title left">其他情形<view class="red-star">*</view>：</view>
               <view class="entering-content-name left">
                 <input type="text" class="input-txt"
                  bindinput='remarkChange' disabled='{{disabled}}' value='{{safeList.remark[index]}}' placeholder='其他情形(必填)'/>
-              </view>
+              </view> -->
             </view>
           </view>
         </view>
 			</view>
 		</view>
 		<view class="entering-box">
-			<view class="entering-box-title">
+			<!-- <view class="entering-box-title">
 				<image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>
-          <view>选择提交审计人员<view class="red-star">*</view></view>
+          <view>审核人员<view class="red-star">*</view></view>
 			</view>
 			<view class="entering-content">
         <picker class="input-select-long" name='approver' mode='selector'  value='{{leaderList[listIndex]}}'
          range='{{leaderList}}' range-key='user_name'disabled='{{disabled}}' bindchange='auditPickerChange'>
           <option>{{approver}}</option>
         </picker>
-			</view>
+			</view> -->
+      <view class="weui-cell weui-cell_select">
+        <view class="weui-cell__hd weui-cell__hd_in-select-after">
+          <image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>  
+          <view class="weui-label">审核人员<view class="red-star">*</view>:</view>
+        </view>
+        <view class="weui-cell__bd">
+          <picker name='approver' mode='selector'  value='{{leaderList[listIndex]}}'
+            range='{{leaderList}}' range-key='user_name'disabled='{{disabled}}' bindchange='auditPickerChange'>
+            <view class="weui-select weui-select_in-select-after right">{{approver}}</view>
+          </picker>
+        </view>
+      </view>
 		</view>
 		<view class="entering-box">
 			<view class="entering-box-title">
@@ -208,18 +159,23 @@
 			<view class="entering-content">
 				<view class="upload-box clear">
           <block wx:for="{{imgs}}" wx:key="imgkey">
-            <view class="" data-index='{{index}}' id="{{item}}">
+            <view class="">
               <view class="upload-pic left">
-                <view bindtap="previewImage">
-                  <image src="{{item}}" mode="aspectFill" style='width:90px;height:90px;' />
+                <view bindtap="previewImage" data-index='{{index}}' id="{{item}}">
+                  <image src="{{item}}" mode="aspectFill" style='width:100px;height:100px;' />
                 </view>
                 <view class="close-btn" data-index='{{index}}' bindtap='delImg' style="display: {{display}};"></view>
               </view>
             </view>
           </block>
-          <view class="upload-btn left">
-            <view bindtap="chooseImage" style="display: {{display}};">
-              <image src="../../images/upload-btn.png" style='width:80px;height:80px;'/>    
+          <view class="upload-btn left" wx:if="{{display != 'none'}}">
+            <view bindtap="chooseImage">
+              <image src="../../images/upload-btn.png" style='width:90px;height:90px;'/>    
+            </view>
+					</view>
+          <view class="upload-btn left" wx:elif="{{display === 'none'}}">
+            <view>
+              <image src="../../images/upload-btn.png" style='width:90px;height:90px;'/>    
             </view>
 					</view>
 				</view>
@@ -233,18 +189,23 @@
 			<view class="entering-content">
 				<view class="upload-box clear">
           <block wx:for="{{unionImgs}}" wx:key="*this">
-            <view class="" data-index='{{index}}' id="{{item}}">
+            <view class="">
               <view class="upload-pic left">
-                <view bindtap="previewUnionImage" >
-                  <image src="{{item}}" mode="aspectFill" style='width:90px;height:90px;'/>
+                <view bindtap="previewUnionImage" data-index='{{index}}' id="{{item}}">
+                  <image src="{{item}}" mode="aspectFill" style='width:100px;height:100px;'/>
                 </view>
                 <view class="close-btn" data-index='{{index}}' bindtap='delUnionImg' style="display: {{display}};"></view>
               </view>
             </view>
           </block>
-					<view class="upload-btn left">
-						<view bindtap="chooseUnionFile" style="display: {{display}};">
-              <image src="../../images/upload-btn.png" style='width:80px;height:80px;'/>    
+					<view class="upload-btn left" wx:if="{{display != 'none'}}">
+						<view bindtap="chooseUnionFile">
+              <image src="../../images/upload-btn.png" style='width:90px;height:90px;'/>    
+            </view>
+					</view>
+          <view class="upload-btn left" wx:elif="{{display === 'none'}}">
+						<view>
+              <image src="../../images/upload-btn.png" style='width:90px;height:90px;'/>    
             </view>
 					</view>
 				</view>
@@ -252,7 +213,7 @@
 		</view>
 		<view class="big-btn two-btn clear" hidden='{{disabled}}'>
 			<view class="big-btn-main other-btn-main left" bindtap='saveEntry'><view>暂存</view></view>
-			<view class="big-btn-main left" bindtap='sumbit'><view>提交</view></view>
+			<view class="big-btn-main left" bindtap='submit'><view>提交</view></view>
 		</view>
 	</view>
 </view>

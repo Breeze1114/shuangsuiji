@@ -8,7 +8,11 @@ var qqmapsdk = new QQMapWX({
   key: '5ARBZ-WIR3K-2AIJN-AQCZC-YQLM6-KLBAQ' // 开发者秘钥
 });
 
+//文件系统
 const fileSys = wx.getFileSystemManager();
+
+//格式化时间工具
+var util = require('../../utils/util.js');
 
 Page({
 
@@ -33,8 +37,8 @@ Page({
       law:[],
       remark:[]
     }, 
-    leaderList: [],
-    approver: "请选择审核人员",
+    leaderList: [],//审批人列表
+    approver: "请选择",//审批人
     approverId: '', //审批人id
     disabled: false, //选择器是否可用
     checked: true, //是否选中
@@ -44,9 +48,11 @@ Page({
     files: [],//最后上传到服务器的附件信息
     imgs: [],//在前端展示的图片路径信息
     unionImgs:[],//上传牵头总表图片
-    display: '',//控制上传图片的添加按钮是否可用
+    display: '',//控制图片的删除按钮是否显示
+    canUpload: true,//控制上传图片的按钮是否可用
     tempImgPath: [], //上传的图片的临时路径
-    tempUnionImgPath: [] //上传的联合总表的临时路径
+    tempUnionImgPath: [],//上传的联合总表的临时路径
+    today:"",//今天
   },
 
   /**
@@ -58,6 +64,7 @@ Page({
     var work = JSON.parse(options.work);
     var jumpUrl = '';
     var port = app.globalData.port;
+    var today = util.formatTime(new Date());//拿到今天的日期并格式化成yyyy-mm-dd
     console.log(that.data);
     fileSys.getSavedFileList({
       success(res){console.log("本地缓存的文件列表",res)}
@@ -65,7 +72,8 @@ Page({
     that.setData({
       workId: options.workId,
       workInfo: work,
-      isUnionHeadOrg: work.is_union_head_org
+      isUnionHeadOrg: work.is_union_head_org,
+      today: today
     });
     
     wx.request({
@@ -92,7 +100,7 @@ Page({
         }
         //给中间量的list初始化值
         for (var i = 0; i < list.length; i++) {
-          arr.push("请输入检查结果");
+          arr.push("未发现问题");
           arr1.push("");
           arr2.push("");
         }
@@ -189,12 +197,15 @@ Page({
             },
             approver: res.data.data.audit_user_name,
             checked: checked,
+            radioValue: res.data.data.is_pass,
             checkResult: res.data.data.check_result,
             placeholder: '', //提示文本清空
             imgs: files,
             unionImgs: unionFiles,
-            display: "none"//不可再上传图片
+            display: "none", //不可再删除图片
+            canUpload:false //不可再上传图片
           })
+          console.log(that.data)
         } else {//如果是本地缓存状态，读取缓存
           that.getStorage();
         }
@@ -426,19 +437,23 @@ Page({
       //所以需要把临时文件存起来，不然在一段时间过后，临时路径会访问不到该文件
       var tempList = [];
       var tempUnionList = [];
-      var imgPath = that.data.imgs;
+      var imgPath = [];
       var imgList = that.data.imgs;
-      var unionPath = that.data.imgs;
-      var unionList = that.data.imgs;
+      var unionPath = [];
+      var unionList = that.data.unionImgs;
       //先删除掉那些临时的路径
       for (let j = 0; j < imgList.length; j++) {
         if (imgList[j].indexOf("tmp") != -1) {
-          imgPath.splice(j, 1);
+          //imgPath.splice(j, 1);
+        }else{
+          imgPath.push(imgList[j]);
         }
       }
       for (let j = 0; j < unionList.length; j++) {
         if (unionList[j].indexOf("tmp") != -1) {
-          unionPath.splice(j, 1);
+          //unionPath.splice(j, 1);
+        }else{
+          unionPath.push(unionList[j]);
         }
       }
       for (var i = 0; i < that.data.tempImgPath.length; i++) {
@@ -496,9 +511,9 @@ Page({
       }
       setTimeout(function () {
         that.setData({
-          imgs: that.data.imgs.concat(tempList),
+          imgs: imgPath.concat(tempList),
           tempImgPath: that.data.tempImgPath.concat(tempList),//把路径存起来
-          unionImgs: that.data.unionImgs.concat(tempUnionList),
+          unionImgs: unionPath.concat(tempUnionList),
           tempUnionImgPath: that.data.tempUnionImgPath.concat(tempUnionList)
         });
       }, 600)
@@ -571,7 +586,6 @@ Page({
         mask: true
       })
       setTimeout(function(){
-        console.log(getCurrentPages)
         wx.navigateBack({
           delta: 2,
         })
@@ -610,7 +624,7 @@ Page({
       url: port + '/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
       data: {
         check_result: that.data.checkResult,
-        operate: '暂存',//暂定提交审核，到时候需要再改
+        operate: '提交审核',//暂定提交审核，到时候需要再改
         check_date: that.data.date.value,
         is_pass: that.data.radioValue,
         audit_user_id: that.data.approverId,
@@ -1075,7 +1089,7 @@ Page({
       key: 'checkValue' + workId,
       success: function (res) {
         var checked;
-        console.log("是狗合格",res.data)
+        console.log("是否合格",res.data)
         if (res.data) {
           radioValue = res.data;
         } else {
@@ -1284,7 +1298,7 @@ Page({
         return false;
       }
     }
-    if (data.approver === '请选择审核人员') {
+    if (data.approver === '请选择') {
       wx.showToast({
         title: '请选择一个审批人!',
         icon: 'none',

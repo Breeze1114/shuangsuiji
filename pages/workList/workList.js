@@ -11,7 +11,7 @@ Page({
     taskId: app.globalData.task_id,
     workList: {},
     taskStatus: "",
-    storageKeys: [] //缓存key值
+    storageKeys: [], //缓存key值
   },
 
   /**
@@ -64,6 +64,12 @@ Page({
               for (var j = 0; j < workList.length; j++) {
                 if (keys[i].indexOf(workList[j].id) != -1) {
                   workList[j].state = '暂存';
+                }
+                //隐藏录入按钮
+                if (workList[j].state === '已提交'){
+                  workList[j]['hidden'] = true;
+                }else{
+                  workList[j]['false'] = true;
                 }
               }
             }

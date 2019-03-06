@@ -6,8 +6,8 @@
         <view class="work-list-title clear">
           <image src="../../images/ico-company.png" style="width:20px;height:20px;" class="left" />
           <view class="work-title-name left">{{item.ep_name}}</view>
-          <!-- <image src="../../images/gray-arrow.png" style="width:20px;height:20px;" class="right" /> -->
-          <view class="work-title-right right" id='{{item.id}}' data-status='{{item.state}}' data-work='{{item}}' bindtap='turntoInput'>
+          <view class="work-title-right right" id='{{item.id}}' data-status='{{item.state}}'
+          hidden='{{item.hidden}}' data-work='{{item}}' bindtap='turntoInput'>
             <image src="../../images/work-title-entering.png" style="width:20px;height:20px;"/>
             <view class="work-title-right-txt">录入</view>
           </view>
