@@ -2,7 +2,7 @@
 <view class=''>
   <view class='body'>
     <view class="login">
-      <image src="../../images/login-pic.png" alt="" mode='aspectFit' />
+      <!-- <image src="../../images/login-pic.png" alt="" mode='aspectFit' /> -->
       <view class="login-box">
         <view class="login-main-box">
           <view class="login-main-content">

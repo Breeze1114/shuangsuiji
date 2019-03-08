@@ -74,9 +74,9 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    wx.setNavigationBarTitle({
-      title: '登录',
-    })
+    // wx.setNavigationBarTitle({
+    //   title: '登录',
+    // })
   },
 
   //登录按钮点击事件
@@ -276,7 +276,7 @@ Page({
       responseType: 'text',
       success: function (res) {
         wx.setStorage({
-          key: 'resultNameList',
+          key: 'resultNameList_' + uid,
           data: res.data.data,
           success: function(res) {console.log("缓存检查结果列表成功！")},
         })
@@ -314,6 +314,147 @@ Page({
           content: '获取审批人员列表失败',
           showCancel: false,
           confirmText: '返回',
+          success: function (res) {
+            if (res.confirm) {
+              wx.navigateBack({
+                delta: 1,
+              })
+            }
+          }
+        })
+      },
+    });
+  },
+
+  //根据taskId获取工作列表，并缓存起来
+  getWorkList: function (port, taskId, authorization, stateType, loadType) {
+    wx.request({
+      url: port + '/api/app/checkUser/task/' + taskId + '/workList',
+      data: {
+        page: "1",
+        rows: "10",
+        state: stateType
+      },
+      header: { 'Authorization': authorization },
+      method: 'GET',
+      dataType: 'json',
+      responseType: 'text',
+      success: function (res) {
+        if (res.data.code === 0) {
+          console.log('任务列表', res);
+          if (loadType === 'show') {
+            wx.hideToast();
+            wx.showToast({
+              title: '加载成功',
+              icon: 'success',
+              duration: 500,
+              mask: true,
+            })
+          }
+          var workList = res.data.data;
+          // var keys = that.data.storageKeys;
+          // for (var i = 0; i < keys.length; i++) {
+          //   for (var j = 0; j < workList.length; j++) {
+          //     if (keys[i].indexOf(workList[j].id) != -1) {
+          //       workList[j].state = '暂存';
+          //     }
+          //     //隐藏录入按钮
+          //     if (workList[j].state === '已提交') {
+          //       workList[j]['hidden'] = true;
+          //     } else {
+          //       workList[j]['false'] = true;
+          //     }
+          //   }
+          // }
+          //缓存起来workList
+          wx.setStorage({
+            key: 'workList_' + taskId,
+            data: workList,
+            success: function (res) { console.log("工作列表", workList) },
+          })
+          // setTimeout(function () {
+          //   that.setData({
+          //     workList: workList
+          //   })
+          //   wx.hideToast();
+          // }, 250)
+        } else {
+          wx.showModal({
+            title: '系统提示',
+            content: res.data.msg,
+            showCancel: false,
+            confirmText: '知道了',
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
+          })
+        }
+      },
+      fail: function (res) {
+        if (res.errMsg == 'request:fail socket time out timeout:60000') {
+          wx.showModal({
+            title: '加载超时',
+            content: '请检查网络状态是否良好',
+            showCancel: false,
+            confirmText: '知道了',
+            success: function (res) {
+              if (res.confirm) {
+                wx.hideToast();
+              }
+            }
+          })
+        } else {
+          wx.showModal({
+            title: '系统提示',
+            content: '获取作业列表失败,请联系管理员',
+            showCancel: false,
+            confirmText: '知道了',
+            success: function (res) {
+              if (res.confirm) {
+                wx.hideToast();
+              }
+            }
+          })
+          console.log(res);
+        }
+      },
+    })
+  },
+
+  //根据workId获取该工作的检查结果信息
+  getWorkCheckResult: function (port, workId, authorization) {
+    wx.request({
+      url: port + '/api/app/checkUser/work/' + workId + '/info',
+      data: '',
+      header: {
+        'Authorization': authorization
+      },
+      method: 'GET',
+      dataType: 'json',
+      responseType: 'text',
+      success: function (res) {
+        if (res.data.code === 0) {
+          var workResult = res.data.data;
+          wx.setStorage({
+            key: 'workResult_' + workId,
+            data: workResult,
+            success: function (res) { console.log("检查结果", workResult) },
+          })
+        } else {
+          wx.showModal({
+            title: '系统提示',
+            content: res.data.msg,
+            showCancel: false,
+            confirmText: '知道了',
+          })
+        }
+      },
+      fail: function (res) {
+        wx.showModal({
+          title: '系统提示',
+          content: '系统出错，请尽快联系系统管理员',
+          showCancel: false,
+          confirmText: '知道了',
           success: function (res) {
             if (res.confirm) {
               wx.navigateBack({

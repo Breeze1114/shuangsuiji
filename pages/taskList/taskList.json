@@ -1,10 +1,4 @@
 {
-  "usingComponents": {
-    "wux-card": "../../dist/card/index",
-    "wux-wing-blank": "../../dist/wing-blank/index",
-    "wux-white-space": "../../dist/white-space/index",
-    "wux-icon": "../../dist/icon/index"
-  },
   "window": {
     "navigationBarBackgroundColor": "#1890ff",
     "navigationBarTextStyle": "white",

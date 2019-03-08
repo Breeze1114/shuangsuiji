@@ -4,7 +4,7 @@
     <view class="work-detail-main">
       <view class="work-detail-title">
         <image src="../../images/ico-detail-title.png" style="width:20px;height:20px;"/>
-        <view>当事人基本资料</view>
+        <view>当事人基本情况</view>
       </view>
       <view class="detail-main clear">
         <view class="detail-main-title left">企业名称</view>
@@ -31,10 +31,10 @@
         </view>
       </view>
       <view class="detail-main clear">
-        <view class="detail-main-title left">联系人</view>
+        <view class="detail-main-title left">法定代表人</view>
         <view class="detail-main-content right">
           <view class="clear">
-            <view class="detail-main-txt right">{{workInfo.liaison_name}}</view>
+            <view class="detail-main-txt right">{{workInfo.charge_person}}</view>
           </view>
         </view>
       </view>
@@ -80,7 +80,7 @@
         </view>
       </view>
       <view class="detail-main clear">
-        <view class="detail-main-title left">执法编号</view>
+        <view class="detail-main-title left">执法证号</view>
         <view class="detail-main-content right">
           <view class="clear">
             <view wx:for="{{workInfo.check_users}}" wx:key="*this" wx:for-item="item" class='info'>

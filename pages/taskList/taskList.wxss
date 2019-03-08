@@ -4,3 +4,12 @@
 @import "../../style/init.wxss";
 
 @import "../../style/common.wxss";
+
+.task-num {
+  text-decoration: underline;
+  display: inline-block;
+}
+
+.red-txt {
+  color: #e20105;
+}

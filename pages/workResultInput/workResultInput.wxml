@@ -60,7 +60,7 @@
       <view class="weui-cell weui-cell_select">
         <view class="weui-cell__hd weui-cell__hd_in-select-after">
           <image src="../../images/ico-entering-title.png" style="width:20px;height:20px;"/>  
-          <view class="weui-label">检查日期:</view>
+          <view class="weui-label">检查日期<view class="red-star">*</view>:</view>
         </view>
         <view class="weui-cell__bd">
           <picker mode='date' fields='day' start='2000-01-01' end='{{today}}' bindchange='showDate' disabled='{{date.disabled}}'>

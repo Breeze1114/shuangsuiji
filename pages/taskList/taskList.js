@@ -9,8 +9,14 @@ Page({
   data: {
     token: app.globalData.token,
     taskList: {},
+    workIds: [],//工作id列表
+    zcWorkNum:0,
     userFullName:"", //用户名
-    userOrgName:""//用户所在机构
+    userOrgName:"",//用户所在机构
+    pageIndex: 1,//当前页码
+    rowsNum: 3, //当前页显示的数据量
+    loadingHidden: true,
+    nomoreHidden: true,
   },
 
   /**
@@ -18,14 +24,8 @@ Page({
    */
   onLoad: function (options) {
     var that = this//搭桥，直接用this访问不了
-    wx.getStorageInfo({
-      success: function(res) {console.log("StorageInfo",res)},
-      fail: function(res) {},
-      complete: function(res) {},
-    })
     wx.getNetworkType({
       success: function(res) {console.log("网络状态√",res)},
-      fail: function (res) { console.log("网络状态×", res)},
     })
     wx.showToast({
       title: '加载中',
@@ -98,8 +98,8 @@ Page({
     wx.request({
       url: port + '/api/app/checkUser/taskList',
       data: {
-        page: 1,
-        rows: 10
+        page: that.data.pageIndex,
+        rows: that.data.rowsNum
       },
       header: { 'Authorization': app.globalData.authorization },
       method: 'GET',
@@ -116,7 +116,9 @@ Page({
           })
           that.data.taskList = res.data.data
           setTimeout(function () {
+            // if (res.data.data.length < that.data.rowsNum)
             that.setData({
+              // taskList: that.data.taskList.concat(res.data.data)
               taskList: res.data.data
             })
             wx.hideToast();
@@ -201,6 +203,31 @@ Page({
     wx.setNavigationBarTitle({
       title: '任务列表',
     })
+    wx.getStorageInfo({
+      success: function(res) {
+        console.log("storageInfo",res);
+        //拿到所有的缓存信息的key值
+        var keys = res.keys;
+        var workIds = [];
+        for(let i=0;i<keys.length;i++){
+          var index = keys[i].indexOf("_");
+          if(index != -1){
+            var workId = keys[i].slice(index + 4, keys[i].length);
+            if (workIds.indexOf(workId) === -1) {
+              workIds.push(workId);
+            }
+          }
+        }
+        var num = workIds.length;
+        that.setData({
+          zcWorkNum: num,
+          workIds: workIds
+        })
+        console.log(that.data);
+      },
+      fail: function(res) {},
+      complete: function(res) {},
+    })
   },
 
   showWorkList: function (e) {
@@ -208,7 +235,7 @@ Page({
     //赋值给全局变量，在别的页面取 
     app.globalData.task_id = taskId;
     wx.navigateTo({
-      url: '../workList/workList',
+      url: '../workList/workList?type=normal',
     })
   },
 
@@ -260,6 +287,56 @@ Page({
         url: '../index/index',
       })
     }, 200)
-  }
+  },
 
+  //转到已经暂存的工作列表页面
+  showTmpWorkList: function(e){
+    var that = this;
+    var workIds = that.data.workIds;
+    app.globalData.workIds = workIds;
+    wx.navigateTo({
+      url: '../workList/workList?type=temList',
+    })
+  },
+
+  //用户上拉触底事件
+  onReachBottom: function () {
+    var that = this;
+    that.setData({
+      loadingHidden:false
+    })
+    // 显示加载图标
+    wx.showLoading({
+      title: '玩命加载中',
+    })
+    setTimeout(function(){
+      that.setData({
+        pageIndex: that.data.pageIndex + 1,
+        rowsNum: that.data.rowsNum + that.data.rowsNum,
+        loadingHidden:true
+      })
+      that.loadTaskList();
+      // 隐藏加载框
+      wx.hideLoading();
+    },700)
+  },
+
+  //下拉刷新
+  onPullDownRefresh: function () {
+    wx.showNavigationBarLoading();
+    var that = this;
+    // 显示加载图标
+    wx.showLoading({
+      title: '玩命加载中',
+    })
+    that.setData({
+      pageIndex: that.data.pageIndex - 1,
+      rowsNum: 3
+    })
+    that.loadTaskList();
+    // 隐藏导航栏加载框
+    wx.hideNavigationBarLoading();
+    // 停止下拉动作
+    wx.stopPullDownRefresh();
+  },
 })

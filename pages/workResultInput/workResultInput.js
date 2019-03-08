@@ -65,7 +65,6 @@ Page({
     var jumpUrl = '';
     var port = app.globalData.port;
     var today = util.formatTime(new Date());//拿到今天的日期并格式化成yyyy-mm-dd
-    console.log(that.data);
     fileSys.getSavedFileList({
       success(res){console.log("本地缓存的文件列表",res)}
     })
@@ -75,7 +74,7 @@ Page({
       isUnionHeadOrg: work.is_union_head_org,
       today: today
     });
-    
+    console.log(that.data);
     wx.request({
       url: port + '/api/app/resultNameList',
       data: '',
@@ -183,30 +182,101 @@ Page({
           } else {
             files = [];
           }
-          that.setData({
-            workInfo: workInfo,
-            date: {
-              value: that.data.workResult.check_date,
-              disabled: true
-            },
-            disabled: true,
-            safeList: {
-              law: lawList,
-              remark: remarkList,
-              result: resultList
-            },
-            approver: res.data.data.audit_user_name,
-            checked: checked,
-            radioValue: res.data.data.is_pass,
-            checkResult: res.data.data.check_result,
-            placeholder: '', //提示文本清空
-            imgs: files,
-            unionImgs: unionFiles,
-            display: "none", //不可再删除图片
-            canUpload:false //不可再上传图片
-          })
-          console.log(that.data)
-        } else {//如果是本地缓存状态，读取缓存
+          setTimeout(function(){
+            that.setData({
+              workInfo: workInfo,
+              date: {
+                value: that.data.workResult.check_date,
+                disabled: true
+              },
+              disabled: true,
+              safeList: {
+                law: lawList,
+                remark: remarkList,
+                result: resultList
+              },
+              approver: res.data.data.audit_user_name,
+              checked: checked,
+              radioValue: res.data.data.is_pass,
+              checkResult: res.data.data.check_result,
+              placeholder: '', //提示文本清空
+              imgs: files,
+              unionImgs: unionFiles,
+              display: "none", //不可再删除图片
+              canUpload: false //不可再上传图片
+            })
+          },200)
+        } else if (status === '暂存'|| status === '退回') {
+          console.log('检查结果', res.data.data);
+          var result = that.data.workResult.matter_check_result;
+          var isPass = res.data.data.is_pass;
+          var checked;
+          if (isPass === '合格') {
+            checked = true;
+          } else if (isPass === '不合格') {
+            checked = false;
+          }
+          if (result != null) {
+            var resultList = [];
+            var lawList = [];
+            var remarkList = [];
+            for (var i = 0; i < result.length; i++) {
+              resultList.push(result[i].result);
+              lawList.push(result[i].law);
+              remarkList.push(result[i].remark);
+            }
+          }
+          var workInfo = that.data.workInfo;
+          for (var k = 0; k < workInfo.matter.length; k++) {
+            if (resultList[k] != '未发现问题') {
+              workInfo.matter[k].hidden = false;
+            }
+            if (resultList[k] == '其他情形') {
+              workInfo.matter[k].remarkHidden = false;
+            }
+          }
+          var files = [];//附件信息
+          var unionFiles = [];//联合总表信息
+          var data = res.data.data.files;
+          if (data.length > 0) {
+            //files = res.data.data.files;
+            for (var i = 0; i < data.length; i++) {
+              if (data[i].type != 'union') {
+                files.push(port + data[i].url);
+              } else {
+                unionFiles.push(port + data[i].url);
+              }
+            }
+          } else {
+            files = [];
+          }
+          var checkResult = res.data.data.check_result;//检查结果
+          setTimeout(function(){
+            that.setData({
+              workInfo: workInfo,
+              date: {
+                value: that.data.workResult.check_date,
+                disabled: false
+              },
+              disabled: false,
+              safeList: {
+                law: lawList,
+                remark: remarkList,
+                result: resultList
+              },
+              approver: res.data.data.audit_user_name,
+              checked: checked,
+              radioValue: res.data.data.is_pass,
+              checkResult: res.data.data.check_result,
+              placeholder: '', //提示文本清空
+              imgs: files,
+              files: res.data.data.files,
+              unionImgs: unionFiles,
+              display: "", //不可再删除图片
+              canUpload: true //不可再上传图片
+            })
+          },200)
+        }  else {//如果是本地缓存状态，读取缓存
           that.getStorage();
         }
       },
@@ -315,14 +385,6 @@ Page({
     })
   },
 
-  // //单选框勾选变化事件
-  // checkChange: function (e) {
-  //   var that = this;
-  //   that.setData({
-  //     radioValue: e.detail.value
-  //   })
-  // },
-
   //选择是否合格值改变事件
   checkChange: function (e) {
     var that = this;
@@ -337,259 +399,319 @@ Page({
     })
   },
 
-
   //本地输入数据缓存
   saveEntry: function (e) {
     var that = this;
     //验证是不是必填都填了
     var canSave = that.validateForm(that.data);
     if (canSave) {
-      var workId = app.globalData.work_id;//工作id，根绝每个工作的id区分缓存
-      wx.setStorage({ //检查结果明细
-        key: 'checkResult' + workId,
-        data: that.data.checkResult,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '主要检查情况本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      wx.setStorage({ //检查日期
-        key: 'checkDate' + workId,
-        data: that.data.date.value,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '检查日期本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      wx.setStorage({ //是够合格
-        key: 'checkValue' + workId,
-        data: that.data.radioValue,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '检查是否合格本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      wx.setStorage({ //检查结果列表
-        key: 'matterResult' + workId,
-        data: that.data.safeList.result,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '承办人意见本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      wx.setStorage({ //审批人
-        key: 'approver' + workId,
-        data: {
-          approverId: that.data.approverId,
-          approver: that.data.approver
-        },
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '审批人员本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      wx.setStorage({//附件文件
-        key: 'files' + workId,
-        data: that.data.files,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '附件本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-
-      //选择上传图片后，获得的路径是临时文件的临时路径，
-      //所以需要把临时文件存起来，不然在一段时间过后，临时路径会访问不到该文件
-      var tempList = [];
-      var tempUnionList = [];
-      var imgPath = [];
-      var imgList = that.data.imgs;
-      var unionPath = [];
-      var unionList = that.data.unionImgs;
-      //先删除掉那些临时的路径
-      for (let j = 0; j < imgList.length; j++) {
-        if (imgList[j].indexOf("tmp") != -1) {
-          //imgPath.splice(j, 1);
-        }else{
-          imgPath.push(imgList[j]);
-        }
-      }
-      for (let j = 0; j < unionList.length; j++) {
-        if (unionList[j].indexOf("tmp") != -1) {
-          //unionPath.splice(j, 1);
-        }else{
-          unionPath.push(unionList[j]);
-        }
-      }
-      for (var i = 0; i < that.data.tempImgPath.length; i++) {
-        fileSys.saveFile({
-          tempFilePath: that.data.tempImgPath[i],
-          success(res) {
-            tempList.push(res.savedFilePath);
-            fileSys.getSavedFileList({
-              success(res) { console.log(res) }
-            })
-          },
-          fail(res) {
-            console.log(res);
-            fileSys.getSavedFileList({
-              success(res) { console.log(res) }
-            })
-            wx.showModal({
-              title: '错误提示',
-              content: '上传文件报错，请尽快联系管理员',
-              showCancel: false,
-              confirmText: '知道了',
+      wx.showModal({
+        title: '提示',
+        content: '暂存信息可编辑',
+        showCancel: true,
+        cancelText: '取消',
+        cancelColor: '',
+        confirmText: '确认',
+        confirmColor: '',
+        success: function(res) {
+          console.log("暂存时的data:",that.data);
+          var workId = app.globalData.work_id;//工作id，根绝每个工作的id区分缓存
+          if(res.confirm){
+            wx.setStorage({ //检查结果明细
+              key: 'checkResult_wid' + workId,
+              data: that.data.checkResult,
               success: function (res) { },
-              fail: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '主要检查情况本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
               complete: function (res) { },
             })
-          },
-        });
-      }
-
-      for (var i = 0; i < that.data.tempUnionImgPath.length; i++) {
-        fileSys.saveFile({
-          tempFilePath: that.data.tempUnionImgPath[i],
-          success(res) {
-            tempUnionList.push(res.savedFilePath);
-            fileSys.getSavedFileList({
-              success(res) { console.log(res) }
-            })
-          },
-          fail(res) {
-            console.log(res);
-            fileSys.getSavedFileList({
-              success(res) { console.log(res) }
-            })
-            wx.showModal({
-              title: '错误提示',
-              content: '上传文件报错，请尽快联系管理员',
-              showCancel: false,
-              confirmText: '知道了',
+            wx.setStorage({ //检查日期
+              key: 'checkDate_wid' + workId,
+              data: that.data.date.value,
               success: function (res) { },
-              fail: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '检查日期本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
               complete: function (res) { },
             })
-          },
-        });
-      }
-      setTimeout(function () {
-        that.setData({
-          imgs: imgPath.concat(tempList),
-          tempImgPath: that.data.tempImgPath.concat(tempList),//把路径存起来
-          unionImgs: unionPath.concat(tempUnionList),
-          tempUnionImgPath: that.data.tempUnionImgPath.concat(tempUnionList)
-        });
-      }, 600)
-
-      setTimeout(function(){ 
-        //缓存普通图片
-        wx.setStorage({
-          key: 'imgs' + workId,
-          data: that.data.imgs,
-          success: function (res) { },
-          fail: function (res) {
-            wx.showModal({
-              title: '系统提示',
-              content: '图片路径本地缓存失败',
-              showCancel: false,
-              confirmText: '知道了'
+            wx.setStorage({ //是否合格
+              key: 'checkValue_wid' + workId,
+              data: that.data.radioValue,
+              success: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '检查是否合格本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function (res) { },
             })
-          },
-          complete: function (res) { },
-        })
-
-        wx.setStorage({//联合总表图片
-          key: 'unionImgs' + workId,
-          data: that.data.unionImgs,
-          success: function (res) { },
-          fail: function (res) {
-            wx.showModal({
-              title: '系统提示',
-              content: '联合总表本地缓存失败',
-              showCancel: false,
-              confirmText: '知道了'
+            wx.setStorage({ //检查结果列表
+              key: 'matterResult_wid' + workId,
+              data: that.data.safeList.result,
+              success: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '承办人意见本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function (res) { },
             })
-          },
-          complete: function (res) { },
-        })
-      }, 800)
-      wx.setStorage({//法律法规
-        key: 'law' + workId,
-        data: that.data.safeList.law,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '法律法规本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
+            wx.setStorage({ //审批人
+              key: 'approver_wid' + workId,
+              data: {
+                approverId: that.data.approverId,
+                approver: that.data.approver
+              },
+              success: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '审批人员本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function (res) { },
+            })
+            wx.setStorage({//附件文件
+              key: 'files_wid' + workId,
+              data: that.data.files,
+              success: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '附件本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function (res) { },
+            })
+            //选择上传图片后，获得的路径是临时文件的临时路径，
+            //所以需要把临时文件存起来，不然在一段时间过后，临时路径会访问不到该文件
+            var tempList = [];
+            var tempUnionList = [];
+            var imgPath = [];
+            var imgList = that.data.imgs;//此时的图片路径
+            var unionPath = [];
+            var unionList = that.data.unionImgs;//此时的联合总表的路径
+            //先删除掉那些临时的路径
+            for (let j = 0; j < imgList.length; j++) {
+              if (imgList[j].indexOf("tmp") != -1) {
+                //imgPath.splice(j, 1);
+              } else {
+                imgPath.push(imgList[j]);
+              }
+            }
+            for (let j = 0; j < unionList.length; j++) {
+              if (unionList[j].indexOf("tmp") != -1) {
+                //unionPath.splice(j, 1);
+              } else {
+                unionPath.push(unionList[j]);
+              }
+            }
+            //把新上传的图片保存到本地
+            for (var i = 0; i < that.data.tempImgPath.length; i++) {
+              fileSys.saveFile({
+                tempFilePath: that.data.tempImgPath[i],
+                success(res) {
+                  tempList.push(res.savedFilePath);
+                  fileSys.getSavedFileList({
+                    success(res) { console.log(res) }
+                  })
+                },
+                fail(res) {
+                  console.log(res);
+                  fileSys.getSavedFileList({
+                    success(res) { console.log(res) }
+                  })
+                  wx.showModal({
+                    title: '错误提示',
+                    content: '保存附件报错！',
+                    showCancel: false,
+                    confirmText: '知道了',
+                    success: function (res) { },
+                    fail: function (res) { },
+                    complete: function (res) { },
+                  })
+                },
+              });
+            }
+            for (var i = 0; i < that.data.tempUnionImgPath.length; i++) {
+              fileSys.saveFile({
+                tempFilePath: that.data.tempUnionImgPath[i],
+                success(res) {
+                  tempUnionList.push(res.savedFilePath);
+                  fileSys.getSavedFileList({
+                    success(res) { console.log(res) }
+                  })
+                },
+                fail(res) {
+                  console.log(res);
+                  fileSys.getSavedFileList({
+                    success(res) { console.log(res) }
+                  })
+                  wx.showModal({
+                    title: '错误提示',
+                    content: '保存联合总表报错！',
+                    showCancel: false,
+                    confirmText: '知道了',
+                    success: function (res) { },
+                    fail: function (res) { },
+                    complete: function (res) { },
+                  })
+                },
+              });
+            }
+            setTimeout(function () {
+              that.setData({
+                imgs: imgPath.concat(tempList),
+                tempImgPath: imgPath.concat(tempList),//把路径存起来
+                unionImgs: unionPath.concat(tempUnionList),
+                tempUnionImgPath: unionPath.concat(tempUnionList)
+              });
+            }, 600)
+            setTimeout(function () {
+              //缓存普通图片
+              wx.setStorage({
+                key: 'imgs_wid' + workId,
+                data: that.data.imgs,
+                success: function (res) { },
+                fail: function (res) {
+                  wx.showModal({
+                    title: '系统提示',
+                    content: '图片路径本地缓存失败',
+                    showCancel: false,
+                    confirmText: '知道了'
+                  })
+                },
+                complete: function (res) { },
+              })
+
+              // //保存本地的路径
+              // wx.setStorage({
+              //   key: 'imgPath_wid'+ workId,
+              //   data: that.data.tempImgPath,
+              //   success: function(res) {},
+              //   fail: function(res) {
+              //     wx.showModal({
+              //       title: '系统提示',
+              //       content: '图片路径本地缓存失败',
+              //       showCancel: false,
+              //       confirmText: '知道了'
+              //     })
+              //   },
+              // })
+
+              wx.setStorage({//联合总表图片
+                key: 'unionImgs_wid' + workId,
+                data: that.data.unionImgs,
+                success: function (res) { },
+                fail: function (res) {
+                  wx.showModal({
+                    title: '系统提示',
+                    content: '联合总表本地缓存失败',
+                    showCancel: false,
+                    confirmText: '知道了'
+                  })
+                },
+              })
+              // //保存本地的路径
+              // wx.setStorage({
+              //   key: 'unionImgPath_wid' + workId,
+              //   data: that.data.tempUnionImgPath,
+              //   success: function (res) { },
+              //   fail: function (res) {
+              //     wx.showModal({
+              //       title: '系统提示',
+              //       content: '图片路径本地缓存失败',
+              //       showCancel: false,
+              //       confirmText: '知道了'
+              //     })
+              //   },
+              // })
+            }, 800)
+            wx.setStorage({//法律法规
+              key: 'law_wid' + workId,
+              data: that.data.safeList.law,
+              success: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '法律法规本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function (res) { },
+            })
+            wx.setStorage({//其他情形
+              key: 'remark_wid' + workId,
+              data: that.data.safeList.remark,
+              success: function (res) { },
+              fail: function (res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '其他情形本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function (res) { },
+            })
+            // //任务id
+            // var taskId = app.globalData.task_id;
+            wx.setStorage({//缓存工作信息
+              key: 'work_wid' + workId,
+              data: that.data.workInfo,
+              success: function(res) {},
+              fail: function(res) {
+                wx.showModal({
+                  title: '系统提示',
+                  content: '工作信息本地缓存失败',
+                  showCancel: false,
+                  confirmText: '知道了'
+                })
+              },
+              complete: function(res) {},
+            })
+            //缓存整个data
+            wx.setStorage({
+              key: 'data_wid'+ workId,
+              data: that.data,
+            })
+            console.log("缓存的safelist", that.data.safeList);
+            wx.showToast({
+              title: '暂存成功',
+              icon: 'success',
+              duration: 1000,
+              mask: true
+            })
+            setTimeout(function () {
+              wx.navigateBack({
+                delta: 2,
+              })
+            }, 1000)
+          }
         },
-        complete: function (res) { },
-      })
-      wx.setStorage({//其他情形
-        key: 'remark' + workId,
-        data: that.data.safeList.remark,
-        success: function (res) { },
-        fail: function (res) {
-          wx.showModal({
-            title: '系统提示',
-            content: '其他情形本地缓存失败',
-            showCancel: false,
-            confirmText: '知道了'
-          })
-        },
-        complete: function (res) { },
-      })
-      console.log("缓存的safelist",that.data.safeList);
-      wx.showToast({
-        title: '暂存成功',
-        icon: 'success',
-        duration: 1000,
-        mask: true
-      })
-      setTimeout(function(){
-        wx.navigateBack({
-          delta: 2,
-        })
-      },1000)
+      })      
     }
   },
 
@@ -598,264 +720,30 @@ Page({
     var that = this;
     //先把图片上传,上传完文件后，再调用上传其他信息方法
     var canSumbit = that.validateForm(that.data);
+    var path = that.data.imgs;
+    var uploadPath = that.filterImgPath(path);
+    console.log("uploadPath",uploadPath);
     if (canSumbit){
-      that.uploadFile(that.data.imgs);
-    }
-  },
-
-  //上传结果
-  submitResult: function () {
-    var that = this;
-    var matterCheckResultList = [];
-    var checkResultObj = {};
-    var list = that.data.workInfo.matter;
-    let port = app.globalData.port;
-    for (var i = 0; i < list.length; i++) {
-      checkResultObj = {
-        code: list[i].code,
-        name: list[i].name,
-        result: that.data.safeList.result[i],
-        law: that.data.safeList.law[i],
-        remark: that.data.safeList.remark[i]
-      }
-      matterCheckResultList.push(checkResultObj);
-    }
-    wx.request({
-      url: port + '/api/app/checkUser/work/' + that.data.workId + '/submitCheckResult',
-      data: {
-        check_result: that.data.checkResult,
-        operate: '提交审核',//暂定提交审核，到时候需要再改
-        check_date: that.data.date.value,
-        is_pass: that.data.radioValue,
-        audit_user_id: that.data.approverId,
-        audit_user_name: that.data.approver,
-        matter_check_result: matterCheckResultList,
-        files: that.data.files
-      },
-      header: {
-        'Authorization': app.globalData.authorization
-      },
-      method: 'post',
-      dataType: 'json',
-      responseType: 'text',
-      success: function (res) {
-        console.log(res);
-        if(res.data.code != 1){
-          setTimeout(function(){
-            wx.navigateBack({
-              delta: 2,
-            })
-          },1000)
-          wx.showToast({
-            title: '提交成功！',
-            icon: 'success',
-            duration: 1000,
-            mask: true,
-          })
-          that.delSavedImage(that.data.imgs);//删除本地缓存的图片信息
-          that.delSavedImage(that.data.unionImgs);
-          that.clearStorage(app.globalData.work_id);//提交到服务器后移除本地的缓存
-        }else{
-          wx.showModal({
-            title: '提示',
-            content: res.data.msg,
-            showCancel: false,
-            confirmText: '返回',
-            success: function(res) {
-              if(res.confirm){
-                wx.navigateBack({
-                  delta: 2,
-                })
-              }
-            },
-            fail: function(res) {},
-            complete: function(res) {},
-          })
-        }
-      },
-      fail: function (res) {
-        wx.showModal({
-          title: '系统提示',
-          content: '检查结果提交失败',
-          showCancel: false,
-          confirmText: '知道了'
-        })
-      },
-      complete: function (res) { },
-    })
-  },
-
-  //上传联合总表
-  uploadUnionFile: function (e) {
-    let port = app.globalData.port;
-    var that = this;
-    wx.showToast({//提示正在上传
-      title: '正在上传...',
-      icon: 'loading',
-      mask: true,
-      duration: 1000
-    })
-    var filePaths = e;
-    console.log("联合总表path：",filePaths);
-    if (filePaths.length > 0) {
-      var files = that.data.files;
-      var successNum = e.successNum ? e.successNum : 0;//上传成功次数
-      var failNum = e.failNum ? e.failNum : 0;//上传失败次数
-      var uploadTime = e.uploadTime ? e.uploadTime : 0;//上传次数
-      wx.uploadFile({
-        url: port + '/api/app/upload/result?type=union',
-        filePath: filePaths[uploadTime],
-        name: 'files',
-        header: {
-          'Authorization': app.globalData.authorization
-        },
-        success: function (res) {
-          var data = JSON.parse(res.data);
-          if (data.code === 0) {//上传请求成功状态码
-            //新增一个文件对象
-            var file = {
-              name: data.data.name,
-              status: data.data.status,
-              thumbUrl: data.data.thumbUrl,
-              uid: data.data.uid,
-              url: data.data.url,
-              type: data.data.type
-            }
-            //统计上传文件的个数
-            successNum += 1;
-            //把文件对象放在文件列表里
-            files.push(file);
-            console.log('上传成功次数:' + successNum + ',这是第' + (uploadTime + 1) + '次上传');
-            that.setData({
-              files: files
-            })
-          } else {
-            wx.showModal({
-              title: '错误提示',
-              content: '上传图片失败',
-              showCancel: false,
-              success: function (res) { }
-            })
-          }
-        },
-        fail: function (res) {
-          failNum += 1;
-          console.log('上传失败次数:' + failNum + ',这是第' + (uploadTime + 1) + '次上传');
-          wx.showModal({
-            title: '错误提示',
-            content: '上传图片失败',
-            showCancel: false,
-            success: function (res) { }
-          })
-        },
-        complete: function (res) {
-          uploadTime++;
-          if (uploadTime == e.length) {
-            wx.hideToast();
-            console.log('上传完毕，其中成功' + successNum + '次，失败' + failNum + '次');
-            that.submitResult();
-          } else {
-            e.successNum = successNum;
-            e.failNUm = failNum;
-            e.uploadTime = uploadTime;
-            that.uploadUnionFile(e);
+      wx.showModal({
+        title: '提示',
+        content: '请选择提交方式',
+        showCancel: true,
+        cancelText: '保存信息',
+        cancelColor: '#576B95',
+        confirmText: '提交审核',
+        confirmColor: '#576B95',
+        success: function(res) {
+          if(res.confirm){
+            // that.uploadFile(uploadPath,"提交审核");
+            app.uploadFile(uploadPath, "提交审核", app.globalData.port, that.data.unionImgs, that.data.files, that.data);
+          }else{
+            // that.uploadFile(uploadPath,"暂存");
+            app.uploadFile(uploadPath, "暂存", app.globalData.port, that.data.unionImgs, that.data.files, that.data);
           }
         },
       })
-    } else {
-      that.submitResult();
     }
   },
-
-  //上传附件
-  uploadFile: function (e) {
-    let port = app.globalData.port;
-    var that = this;
-    wx.showToast({//提示正在上传
-      title: '正在上传...',
-      icon: 'loading',
-      mask: true,
-      duration: 1000
-    })
-    var filePaths = e;
-    var unionFilePaths = that.data.unionImgs;//联合总表的临时路径
-    console.log("附件path：",filePaths);
-    if (filePaths.length > 0) {
-      var files = that.data.files;
-      var successNum = e.successNum ? e.successNum : 0;//上传成功次数
-      var failNum = e.failNum ? e.failNum : 0;//上传失败次数
-      var uploadTime = e.uploadTime ? e.uploadTime : 0;//上传次数
-      wx.uploadFile({
-        url: port + '/api/app/upload/result',
-        filePath: filePaths[uploadTime],
-        name: 'files',
-        header: {
-          'Authorization': app.globalData.authorization
-        },
-        success: function (res) {
-          var data = JSON.parse(res.data);
-          if (data.code === 0) {//上传请求成功状态码
-            //新增一个文件对象
-            var file = {
-              name: data.data.name,
-              status: data.data.status,
-              thumbUrl: data.data.thumbUrl,
-              uid: data.data.uid,
-              url: data.data.url,
-              type: data.data.type
-            }
-            //统计上传文件的个数
-            successNum += 1;
-            //把文件对象放在文件列表里
-            files.push(file);
-            console.log('上传成功次数:' + successNum + ',这是第' + (uploadTime + 1) + '次上传');
-            that.setData({
-              files: files
-            })
-          } else {
-            wx.showModal({
-              title: '错误提示',
-              content: '上传图片失败',
-              showCancel: false,
-              success: function (res) { }
-            })
-          }
-        },
-        fail: function (res) {
-          failNum += 1;
-          console.log('上传失败次数:' + failNum + ',这是第' + (uploadTime + 1) + '次上传');
-          wx.showModal({
-            title: '错误提示',
-            content: '上传图片失败',
-            showCancel: false,
-            success: function (res) { }
-          })
-        },
-        complete: function (res) {
-          uploadTime++;
-          if (uploadTime == e.length) {
-            wx.hideToast();
-            console.log('上传完毕，其中成功' + successNum + '次，失败' + failNum + '次');
-            if (unionFilePaths.length > 0){
-              that.uploadUnionFile(unionFilePaths);
-            }else{
-              that.submitResult();
-            }
-          } else {
-            e.successNum = successNum;
-            e.failNUm = failNum;
-            e.uploadTime = uploadTime;
-            that.uploadFile(e);
-          }
-        },
-      })
-    } else if (unionFilePaths.length > 0){
-      that.uploadUnionFile(unionFilePaths);
-    } else {
-      that.submitResult();
-    }
-  },
-
 
   //图片上传
   chooseImage: function (e) {
@@ -876,8 +764,8 @@ Page({
             imgs: that.data.imgs.concat(res.tempFilePaths),
             tempImgPath: that.data.tempImgPath.concat(res.tempFilePaths)//把临时路径存起来
           });
-          console.log(that.data.imgs);
-          console.log(that.data.tempImgPath);
+          console.log("选择完图片后的img",that.data.imgs);
+          console.log("选择完图片后的tempImgPath",that.data.tempImgPath);
         },500)
       }
     })
@@ -902,6 +790,8 @@ Page({
             unionImgs: that.data.unionImgs.concat(res.tempFilePaths),
             tempUnionImgPath: that.data.tempUnionImgPath.concat(res.tempFilePaths)//把临时路径存起来
           });
+          console.log("选择完图片后的unionImgs", that.data.unionImgs);
+          console.log("选择完图片后的tempUnionImgPath", that.data.tempUnionImgPath);
         },500)
       }
     })
@@ -1049,9 +939,11 @@ Page({
     var workId = app.globalData.work_id;//工作id
     var imgs = [];
     var unionImgs = [];
+    var imgPath = [];//图片临时路径(上传用)
+    var unionImgPath = [];
     //检查日期
     wx.getStorage({
-      key: 'checkDate' + workId,
+      key: 'checkDate_wid' + workId,
       success: function (res) {
         if (res.data) {
           checkDate = res.data;
@@ -1070,7 +962,7 @@ Page({
     })
     //主要检查情况
     wx.getStorage({
-      key: 'checkResult' + workId,
+      key: 'checkResult_wid' + workId,
       success: function (res) {
         if (res.data) {
           checkResult = res.data;
@@ -1086,7 +978,7 @@ Page({
     })
     //是否合格
     wx.getStorage({
-      key: 'checkValue' + workId,
+      key: 'checkValue_wid' + workId,
       success: function (res) {
         var checked;
         console.log("是否合格",res.data)
@@ -1113,7 +1005,7 @@ Page({
     })
     //承办人意见
     wx.getStorage({
-      key: 'matterResult' + workId,
+      key: 'matterResult_wid' + workId,
       success: function (res) {
         if (res.data) {
           safeList.result = res.data;
@@ -1137,7 +1029,7 @@ Page({
     })
     //审批人
     wx.getStorage({
-      key: 'approver' + workId,
+      key: 'approver_wid' + workId,
       success: function (res) {
         if (res.data) {
           approver = res.data;
@@ -1152,7 +1044,7 @@ Page({
     })
     //附件信息
     wx.getStorage({
-      key: 'files' + workId,
+      key: 'files_wid' + workId,
       success: function (res) {
         if (res.data.length > 0) {
           files = res.data;
@@ -1167,7 +1059,7 @@ Page({
     })
     //图片附件信息
     wx.getStorage({
-      key: 'imgs' + workId,
+      key: 'imgs_wid' + workId,
       success: function (res) {
         if (res.data.length > 0) {
           imgs = res.data;
@@ -1180,10 +1072,23 @@ Page({
       fail: function (res) {},
       complete: function (res) { },
     })
-
+    //图片临时路径
+    wx.getStorage({
+      key: 'imgPath_wid' + workId,
+      success: function(res) {
+        if(res.data.length>0){
+          imgPath = res.data;
+        }
+        that.setData({
+          tempImgPath: imgPath
+        })
+      },
+      fail: function(res) {},
+      complete: function(res) {},
+    })
     //联合总表信息
     wx.getStorage({
-      key: 'unionImgs' + workId,
+      key: 'unionImgs_wid' + workId,
       success: function (res) {
         if (res.data.length > 0) {
           unionImgs = res.data;
@@ -1194,12 +1099,24 @@ Page({
         console.log("联合总表信息", res.data);
       },
       fail: function (res) {},
+    })
+    //图片临时路径
+    wx.getStorage({
+      key: 'unionImgPath_wid' + workId,
+      success: function (res) {
+        if (res.data.length > 0) {
+          unionImgPath = res.data;
+        }
+        that.setData({
+          tempUnionImgPath: unionImgPath
+        })
+      },
+      fail: function (res) { },
       complete: function (res) { },
     })
-
     //法律法规
     wx.getStorage({
-      key: 'law' + workId,
+      key: 'law_wid' + workId,
       success: function (res) {
         if (res.data) {
           safeList.law = res.data;
@@ -1214,7 +1131,7 @@ Page({
 
     //其他情形
     wx.getStorage({
-      key: 'remark' + workId,
+      key: 'remark_wid' + workId,
       success: function (res) {
         if (res.data) {
           safeList.remark = res.data;
@@ -1235,34 +1152,40 @@ Page({
   //清除指定的作业的本地缓存
   clearStorage: function(workId){
     wx.removeStorage({
-      key: 'checkDate' + workId,
+      key: 'checkDate_wid' + workId,
     })
     wx.removeStorage({
-      key: 'checkResult' + workId,
+      key: 'checkResult_wid' + workId,
     })
     wx.removeStorage({
-      key: 'checkValue' + workId,
+      key: 'checkValue_wid' + workId,
     })
     wx.removeStorage({
-      key: 'matterResult' + workId,
+      key: 'matterResult_wid' + workId,
     })
     wx.removeStorage({
-      key: 'approver' + workId,
+      key: 'approver_wid' + workId,
     })
     wx.removeStorage({
-      key: 'files' + workId,
+      key: 'files_wid' + workId,
     })
     wx.removeStorage({
-      key: 'imgs' + workId,
+      key: 'imgs_wid' + workId,
     })
     wx.removeStorage({
-      key: 'unionImgs' + workId,
+      key: 'unionImgs_wid' + workId,
     })
     wx.removeStorage({
-      key: 'law' + workId,
+      key: 'imgPath_wid' + workId,
     })
     wx.removeStorage({
-      key: 'remark' + workId,
+      key: 'unionImgPath_wid' + workId,
+    })
+    wx.removeStorage({
+      key: 'law_wid' + workId,
+    })
+    wx.removeStorage({
+      key: 'remark_wid' + workId,
     })
   },
 
@@ -1297,6 +1220,15 @@ Page({
         })
         return false;
       }
+    }
+    if (data.date.value === '' || data.date.value === null){
+      wx.showToast({
+        title: '检查日期不能为空!',
+        icon: 'none',
+        duration: 2000,
+        mask: true,
+      })
+      return false;
     }
     if (data.approver === '请选择') {
       wx.showToast({
@@ -1383,5 +1315,22 @@ Page({
         })
       }
     }
+  },
+
+  //筛选出需要上传的图片路径
+  filterImgPath: function(imgsPath){
+    var uploadPath = [];//需要上传的图片路径
+    //筛选出需要上传的图片
+    if (imgsPath.length > 0) {
+      for (let i = 0; i < imgsPath.length; i++) {
+        //如果是已经缓存到本地的文件或者新上传的图片
+        if (imgsPath[i].indexOf("store_") != -1) {
+          uploadPath.push(imgsPath[i]);
+        } else if (imgsPath[i].indexOf("tmp_") != -1) {
+          uploadPath.push(imgsPath[i]);
+        }
+      }
+    }
+    return uploadPath;
   }
 })

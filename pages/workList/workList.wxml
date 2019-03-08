@@ -20,8 +20,8 @@
           </view>
           <view class="work-list-content-main clear">
             <image src="../../images/ico-linkman.png" style="width:20px;height:20px;" class="left" />
-            <view class="work-list-content-title left">联系人：</view>
-            <view class="work-list-content-name left">{{item.liaison_name}}</view>
+            <view class="work-list-content-title left">法定代表人：</view>
+            <view class="work-list-content-name left">{{item.charge_person}}</view>
           </view>
           <view class="work-list-content-main clear">
             <image src="../../images/ico-item.png" style="width:20px;height:20px;" class="left" />
@@ -39,6 +39,12 @@
           </view>
         </view>
       </view>
+    </view>
+  </view>
+  <view class="big-btn" hidden='{{hidden}}'>
+    <view class="big-btn-main" bindtap='submitAllWork'>
+      <image src="../../images/ico-entering.png" style="width:20px;height:20px;" />
+      <view>一键提交</view>
     </view>
   </view>
 </view>

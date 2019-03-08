@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "wux-card": "../../dist/card/index",
-    "wux-wing-blank": "../../dist/wing-blank/index",
-    "wux-white-space": "../../dist/white-space/index",
-    "wux-row": "../../dist/row/index",
-    "wux-col": "../../dist/col/index"
-  }
-}

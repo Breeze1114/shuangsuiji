@@ -4,6 +4,9 @@
 		<view class="my-info-left left">
 			<view class="my-name">{{userFullName}}</view>
 			<view class="my-dept">{{userOrgName}}</view>
+      <view class="my-dept">
+        当前暂存任务数量:<view class='task-num' bindtap='showTmpWorkList'>{{zcWorkNum}}</view>
+      </view>
 		</view>
 		<view class="my-info-right right">
 			<image src="../../images/ico-exit.png" style="width:20px;height:20px;"/>
@@ -12,48 +15,58 @@
 	</view>
   <view class="mission-list">
     <view wx:for="{{taskList}}" wx:key="*this" wx:for-item="item" bindtap='showWorkList' id='{{item.task_id}}'>
-      <view class="mission-list">
-        <view class="mission-list-main">
-          <view class="mission-list-title clear">
-            <image src="../../images/ico-mission-list.png" style="width:20px;height:20px;" class="left" />
-            <view class="mission-title-name left">{{item.plan_name}}
-            </view>
-            <image src="../../images/blue-arrow.png" style="width:20px;height:20px;" class="right" />
+      <view class="mission-list-main">
+        <view class="mission-list-title clear">
+          <image src="../../images/ico-mission-list.png" style="width:20px;height:20px;" class="left" />
+          <view class="mission-title-name left">{{item.task_name}}
           </view>
-          <view class="mission-list-content">
-            <view class="mission-list-content-main clear">
-              <image src="../../images/ico-number.png" style="width:20px;height:20px;" class="left" />
-              <view class="mission-list-content-title left">计划编号：</view>
-              <view class="mission-list-content-name left">{{item.plan_code}}</view>
-            </view>
-            <view class="mission-list-content-main clear">
-              <image src="../../images/ico-kind.png" style="width:20px;height:20px;" class="left" />
-              <view class="mission-list-content-title left">任务类型：</view>
-              <view class="mission-list-content-name left">{{item.task_type}}</view>
-            </view>
-            <view class="mission-list-content-main clear">
-              <image src="../../images/ico-check.png" style="width:20px;height:20px;" class="left" />
-              <view class="mission-list-content-title left">抽查方式：</view>
-              <view class="mission-list-content-name left">{{item.check_type}}</view>
-            </view>
-            <view class="mission-list-content-main clear">
-              <image src="../../images/ico-org.png" style="width:20px;height:20px;" class="left" />
-              <view class="mission-list-content-title left">编制机构：</view>
-              <view class="mission-list-content-name left">{{item.create_org_name}}</view>
-            </view>
-            <view class="mission-list-content-main clear">
-              <image src="../../images/ico-time-start.png" style="width:20px;height:20px;" class="left" />
-              <view class="mission-list-content-title left">开始时间：</view>
-              <view class="mission-list-content-name left">{{item.start_date}}</view>
-            </view>
-            <view class="mission-list-content-main clear">
-              <image src="../../images/ico-time-end.png" style="width:20px;height:20px;" class="left" />
-              <view class="mission-list-content-title left">结束时间：</view>
-              <view class="mission-list-content-name left">{{item.end_date}}</view>
-            </view>
+          <image src="../../images/blue-arrow.png" style="width:20px;height:20px;" class="right" />
+        </view>
+        <view class="mission-list-content">
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-number.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">任务编号：</view>
+            <view class="mission-list-content-name left">{{item.task_code}}</view>
+          </view>
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-kind.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">任务类型：</view>
+            <view class="mission-list-content-name left">{{item.task_type}}</view>
+          </view>
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-check.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">抽查方式：</view>
+            <view class="mission-list-content-name left">{{item.check_type}}</view>
+          </view>
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-org.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">编制机构：</view>
+            <view class="mission-list-content-name left">{{item.create_org_name}}</view>
+          </view>
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-time-start.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">开始时间：</view>
+            <view class="mission-list-content-name left">{{item.start_date}}</view>
+          </view>
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-time-end.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">结束时间：</view>
+            <view class="mission-list-content-name left">{{item.end_date}}</view>
+          </view>
+          <view class="mission-list-content-main clear">
+            <image src="../../images/ico-empty.png" style="width:20px;height:20px;" class="left" />
+            <view class="mission-list-content-title left">任务状态：</view>
+            <view class="mission-list-content-name left">{{item.task_state}}</view>
           </view>
         </view>
       </view>
     </view>
+  </view>
+  <view class="weui-loadmore" hidden='{{loadingHidden}}'>
+    <view class="weui-loading"></view>
+    <view class="weui-loadmore__tips">正在加载</view>
+  </view>
+  <view class="weui-loadmore weui-loadmore_line weui-loadmore_dot" hidden='{{nomoreHidden}}'>
+    <view class="weui-loadmore__tips weui-loadmore__tips_in-line weui-loadmore__tips_in-dot"></view>
   </view>
 </view>
